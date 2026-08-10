@@ -1,6 +1,14 @@
 # Brand Police frontend
 
-Production-quality Brand Police interface for Brandy. It runs as a static Next.js application today and switches to the real backend later without changing the UI.
+Production-quality Brand Police interface for Brandy. The product shell, typography, spacing, navigation rail, controls, and surface treatments are aligned to the Brandy application source. It runs as a static Next.js application today and switches to the real backend later without changing the UI.
+
+## Brandy UI integration
+
+- Uses Brandy's 68px brand navigation rail and curved workspace shell
+- Uses DM Sans and the Brandy wordmark geometry
+- Uses the same compact control density, neutral borders, card radius, and accent treatment
+- Adds Brand Police as a first-class item beside Collections, Checklist, and Insights
+- Reflows to a Brandy-style mobile header and slide-out rail on smaller screens
 
 ## Run locally
 

@@ -14,18 +14,20 @@ import {
   FileImage,
   Filter,
   Fingerprint,
+  FolderKanban,
   Globe2,
-  Grid2X2,
   HelpCircle,
-  Image as ImageIcon,
   LoaderCircle,
   Menu,
   MoreHorizontal,
   RefreshCw,
   Search,
   Settings,
+  Share2,
   ShieldCheck,
   Sparkles,
+  SquareSlash,
+  Trash2,
   X,
 } from "lucide-react";
 import { brandPoliceService } from "../lib/brand-police-service";
@@ -38,79 +40,55 @@ const tabs = [
   { id: "dismissed", label: "Dismissed" },
 ];
 
-const navigation = [
-  { label: "Overview", icon: Grid2X2 },
+function BrandWordmark() {
+  return (
+    <svg className="brandy-wordmark" viewBox="0 0 126 29" aria-label="Brandy">
+      <g fill="currentColor">
+        <path d="M2 9h24V2H2v7Zm-2-9h28v27H0V0Zm2 11v14h24V11H2Z" />
+        <path d="M6 15v7h7v-7H6Zm-2-2h11v11H4V13Z" transform="rotate(-65 9.5 18.5)" />
+        <path d="M39 23V4h9c3.5 0 6 2.1 6 5.2 0 2.2-1.6 4-4 4.3 2.8.3 4.6 2.2 4.6 4.7 0 3-2.5 5.1-6.1 5.1H39Zm2.7-10.7h5.6c2.2 0 3.7-1.4 3.7-3.3s-1.5-3.2-3.7-3.2h-5.6v6.5Zm0 8.7h6.2c2.2 0 3.7-1.4 3.7-3.3s-1.5-3.4-3.7-3.4h-6.2V21ZM57 23V9.5h2.6l-.1 3.9h.1c.5-2.5 2.2-4 4.5-4h.9v2.4h-1.2c-2.5 0-4.2 1.6-4.2 5V23H57Zm13 .3c-2.8 0-4.6-1.4-4.6-3.7 0-2.6 2.2-4.2 6.4-4.5l3-.2v-.6c0-2.1-1.2-3.3-3.2-3.3-1.8 0-3.1 1-3.3 3h-2.5c.1-3.1 2.6-5 5.8-5 3.7 0 5.8 2.1 5.8 5.5v4.7c0 1.5.2 3 .4 4h-2.6c-.2-.8-.3-1.9-.3-3.2h-.1c-.4 2-2.4 3.3-4.8 3.3Zm.9-1.7c2.3 0 4-1.7 4-4.1v-1.2l-2.7.2c-2.7.2-4.1 1.1-4.1 2.9 0 1.3 1.2 2.2 2.8 2.2ZM87.5 9c3.2 0 5.1 2.2 5.1 5.7V23H90v-8c0-2.6-1.2-4-3.4-4-2.4 0-3.7 1.8-3.7 5v7h-2.7V9.5h2.7l-.1 3.6c.5-2.5 2.2-4.1 4.7-4.1Zm19.1-5h2.6v19h-2.6v-2.3c-1.1 1.7-2.8 2.7-5 2.7-4.1 0-6.9-3-6.9-7.2 0-4.3 2.8-7.3 6.9-7.3 2.2 0 3.9 1 5 2.8V4Zm-4.5 17.3c2.8 0 4.7-2 4.7-5s-1.9-5.2-4.7-5.2-4.7 2.1-4.7 5.2 1.9 5 4.7 5Zm11.2 7.7c-.6 0-1.1 0-1.6-.2v-2.2c.4.1.8.1 1.2.1 1.5 0 2.6-.5 3.5-2.4l.6-1.4-6.1-13.4h2.8l4.7 10.5 4.4-10.5h2.7l-6.4 14.8c-1.3 3.2-3.2 4.7-5.8 4.7Z" />
+      </g>
+    </svg>
+  );
+}
+const railItems = [
+  { label: "Collections", icon: FolderKanban },
+  { label: "Checklist", icon: CheckCircle2 },
   { label: "Brand Police", icon: ShieldCheck, active: true },
-  { label: "Assets", icon: ImageIcon },
-  { label: "Guidelines", icon: Archive },
-  { label: "Analytics", icon: BarChart3 },
+  { label: "Insights", icon: BarChart3 },
 ];
 
-function Logo() {
+function RailItem({ label, icon: Icon, active, bordered, badge }) {
   return (
-    <div className="brand-logo" aria-label="Brandy">
-      <span className="brand-mark"><span /></span>
-      <span>Brandy</span>
-    </div>
+    <button className={`rail-item ${active ? "active" : ""} ${bordered ? "bordered" : ""}`} title={label} aria-label={label}>
+      <span className="rail-icon"><Icon size={17} strokeWidth={1.8} />{badge && <i>{badge}</i>}</span>
+      {!bordered && <span>{label}</span>}
+    </button>
   );
 }
 
-function Sidebar({ open, onClose }) {
+function BrandRail({ open, onClose }) {
   return (
     <>
-      {open && <button className="sidebar-scrim" onClick={onClose} aria-label="Close navigation" />}
-      <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
-        <div className="sidebar-top">
-          <Logo />
-          <button className="icon-button mobile-close" onClick={onClose} aria-label="Close navigation"><X size={18} /></button>
+      {open && <button className="rail-scrim" onClick={onClose} aria-label="Close navigation" />}
+      <aside className={`brand-rail ${open ? "open" : ""}`}>
+        <div className="rail-top">
+          <button className="brand-switch" title="Switch brand"><span>B</span><ChevronDown size={11} /></button>
+          {railItems.map((item) => <RailItem key={item.label} {...item} badge={item.active ? "7" : null} />)}
+          <div className="rail-divider" />
+          <RailItem label="Share brand" icon={Share2} />
+          <RailItem label="Brand settings" icon={Settings} />
+          <RailItem label="Trash" icon={Trash2} />
         </div>
-
-        <button className="space-switcher">
-          <span className="space-avatar">B</span>
-          <span><strong>Brandy</strong><small>Brand Space</small></span>
-          <ChevronDown size={15} />
-        </button>
-
-        <nav aria-label="Primary navigation">
-          <p className="nav-label">Workspace</p>
-          {navigation.map(({ label, icon: Icon, active }) => (
-            <button key={label} className={`nav-item ${active ? "active" : ""}`}>
-              <Icon size={17} strokeWidth={1.8} />
-              <span>{label}</span>
-              {label === "Brand Police" && <span className="new-count">7</span>}
-            </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-bottom">
-          <button className="nav-item"><HelpCircle size={17} /><span>Help & support</span></button>
-          <button className="nav-item"><Settings size={17} /><span>Settings</span></button>
-          <div className="account">
-            <span className="account-avatar">AK</span>
-            <span><strong>Akshay Kumar</strong><small>Workspace admin</small></span>
-            <MoreHorizontal size={16} />
-          </div>
+        <div className="rail-bottom">
+          <RailItem label="Preview" icon={Globe2} bordered />
+          <RailItem label="Command bar" icon={SquareSlash} bordered />
+          <RailItem label="AI chat" icon={Sparkles} bordered />
+          <button className="rail-avatar" title="Akshay Kumar">AK</button>
         </div>
+        <button className="rail-close" onClick={onClose} aria-label="Close navigation"><X size={18} /></button>
       </aside>
     </>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, note, tone }) {
-  return (
-    <div className="stat-card">
-      <div className={`stat-icon ${tone}`}><Icon size={18} /></div>
-      <div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>
-    </div>
-  );
-}
-
-function FindingArtwork({ tone, domain }) {
-  return (
-    <div className={`finding-artwork ${tone}`}>
-      <span className="mini-mark"><span /></span>
-      <small>{domain.split(".")[0]}</small>
-    </div>
   );
 }
 
@@ -119,43 +97,41 @@ function StatusPill({ status }) {
   return <span className={`status-pill ${status}`}><span />{labels[status]}</span>;
 }
 
+function SummaryItem({ label, value, icon: Icon, tone }) {
+  return (
+    <div className="summary-item">
+      <span className={`summary-icon ${tone}`}><Icon size={16} /></span>
+      <span><small>{label}</small><strong>{value}</strong></span>
+    </div>
+  );
+}
+
 function FindingCard({ finding, busy, onStatusChange }) {
   return (
     <article className="finding-card">
-      <FindingArtwork tone={finding.tone} domain={finding.domain} />
+      <div className={`finding-thumb ${finding.tone}`}>
+        <span className="asset-mark">B</span>
+        <small>{finding.domain.split(".")[0]}</small>
+      </div>
       <div className="finding-body">
         <div className="finding-heading">
           <div>
             <div className="domain-line"><Globe2 size={13} />{finding.domain}<StatusPill status={finding.status} /></div>
             <h3>{finding.pageTitle}</h3>
           </div>
-          <a href={finding.sourceUrl} target="_blank" rel="noreferrer" className="icon-button" aria-label={`Open ${finding.domain}`}>
-            <ExternalLink size={16} />
-          </a>
+          <a href={finding.sourceUrl} target="_blank" rel="noreferrer" className="icon-button" aria-label={`Open ${finding.domain}`}><ExternalLink size={15} /></a>
         </div>
         <div className="finding-details">
-          <span><FileImage size={14} />{finding.matchedAsset}</span>
-          <span><Fingerprint size={14} />{finding.matchType}</span>
-          <span><Activity size={14} />{finding.discoveredAt}</span>
+          <span><FileImage size={13} />{finding.matchedAsset}</span>
+          <span><Fingerprint size={13} />{finding.matchType}</span>
+          <span><Activity size={13} />{finding.discoveredAt}</span>
         </div>
         <div className="finding-footer">
-          <span className="source-label">Found on {finding.source}</span>
+          <span>Found via {finding.source}</span>
           <div className="finding-actions">
-            {finding.status !== "approved" && (
-              <button disabled={busy} className="secondary-button success" onClick={() => onStatusChange(finding.id, "approved")}>
-                <Check size={15} />Approve
-              </button>
-            )}
-            {finding.status !== "dismissed" && (
-              <button disabled={busy} className="secondary-button" onClick={() => onStatusChange(finding.id, "dismissed")}>
-                <X size={15} />Dismiss
-              </button>
-            )}
-            {(finding.status === "approved" || finding.status === "dismissed") && (
-              <button disabled={busy} className="secondary-button" onClick={() => onStatusChange(finding.id, "reviewed")}>
-                Mark reviewed
-              </button>
-            )}
+            {finding.status !== "approved" && <button disabled={busy} className="button outline" onClick={() => onStatusChange(finding.id, "approved")}><Check size={14} />Approve</button>}
+            {finding.status !== "dismissed" && <button disabled={busy} className="button ghost" onClick={() => onStatusChange(finding.id, "dismissed")}><X size={14} />Dismiss</button>}
+            {(finding.status === "approved" || finding.status === "dismissed") && <button disabled={busy} className="button ghost" onClick={() => onStatusChange(finding.id, "reviewed")}>Mark reviewed</button>}
           </div>
         </div>
       </div>
@@ -166,15 +142,15 @@ function FindingCard({ finding, busy, onStatusChange }) {
 function Toast({ message, tone = "success", onClose }) {
   return (
     <div className={`toast ${tone}`} role="status">
-      {tone === "success" ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
+      {tone === "success" ? <CheckCircle2 size={17} /> : <AlertCircle size={17} />}
       <span>{message}</span>
-      <button onClick={onClose} aria-label="Dismiss notification"><X size={15} /></button>
+      <button onClick={onClose} aria-label="Dismiss notification"><X size={14} /></button>
     </div>
   );
 }
 
 export default function BrandPolicePage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [railOpen, setRailOpen] = useState(false);
   const [findings, setFindings] = useState([]);
   const [activeTab, setActiveTab] = useState("all");
   const [query, setQuery] = useState("");
@@ -231,75 +207,67 @@ export default function BrandPolicePage() {
 
   return (
     <div className="app-shell">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className="main-content">
-        <header className="topbar">
-          <button className="icon-button menu-button" onClick={() => setSidebarOpen(true)} aria-label="Open navigation"><Menu size={19} /></button>
-          <div className="topbar-spacer" />
-          {brandPoliceService.isDemo && <span className="demo-pill"><Sparkles size={13} />Demo mode</span>}
-          <button className="icon-button notification-button" aria-label="Notifications"><Bell size={18} /><span /></button>
-          <span className="top-avatar">AK</span>
+      <div className="accent-glow" />
+      <BrandRail open={railOpen} onClose={() => setRailOpen(false)} />
+      <main className="workspace">
+        <header className="mobile-header">
+          <button className="icon-button" onClick={() => setRailOpen(true)} aria-label="Open navigation"><Menu size={19} /></button>
+          <BrandWordmark />
+          <button className="rail-avatar">AK</button>
+        </header>
+
+        <header className="workspace-header">
+          <div className="workspace-brand"><BrandWordmark /><span>Brand Police</span></div>
+          <div className="header-actions">
+            {brandPoliceService.isDemo && <span className="demo-pill"><Sparkles size={12} />Demo mode</span>}
+            <button className="icon-button" title="Help"><HelpCircle size={17} /></button>
+            <button className="icon-button notification" title="Notifications"><Bell size={17} /><i /></button>
+            <button className="icon-button" title="More options"><MoreHorizontal size={18} /></button>
+          </div>
         </header>
 
         <div className="page-wrap">
           <section className="page-heading">
             <div>
-              <div className="heading-kicker"><ShieldCheck size={15} />Brand monitoring</div>
+              <div className="eyebrow"><ShieldCheck size={14} />Brand governance</div>
               <h1>Brand Police</h1>
-              <p>Discover where your brand assets appear online and review every match in one place.</p>
+              <p>Find where your brand assets appear online and review potentially unauthorized use.</p>
             </div>
-            <button className="primary-button" onClick={runScan} disabled={scanning}>
-              {scanning ? <LoaderCircle className="spin" size={17} /> : <RefreshCw size={17} />}
-              {scanning ? "Scanning the web" : "Scan now"}
+            <button className="button primary" onClick={runScan} disabled={scanning}>
+              {scanning ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}
+              {scanning ? "Scanning" : "Scan now"}
             </button>
           </section>
 
-          <section className="monitor-card">
-            <div className="monitor-icon"><ShieldCheck size={25} /></div>
-            <div className="monitor-copy">
-              <div><h2>Monitoring is active</h2><span className="live-dot">Live</span></div>
-              <p>4 brand assets are being checked across indexed public web pages.</p>
-            </div>
-            <div className="monitor-meta">
-              <div><span>Last scan</span><strong>Today, 10:42 AM</strong></div>
-              <div><span>Next scan</span><strong>Monday, 9:00 AM</strong></div>
-            </div>
+          <section className="monitor-panel">
+            <div className="monitor-status"><span className="monitor-icon"><ShieldCheck size={18} /></span><span><strong>Monitoring is active</strong><small>4 assets checked across indexed public web pages</small></span></div>
+            <div className="scan-meta"><span><small>Last scan</small><strong>Today, 10:42 AM</strong></span><span><small>Next scan</small><strong>Monday, 9:00 AM</strong></span></div>
           </section>
 
-          <section className="stats-grid" aria-label="Finding summary">
-            <StatCard icon={Globe2} label="Total findings" value={findings.length || 5} note="Across 5 domains" tone="purple" />
-            <StatCard icon={AlertCircle} label="Needs review" value={counts.new || 0} note="New since last scan" tone="red" />
-            <StatCard icon={CheckCircle2} label="Approved" value={counts.approved || 0} note="Known and permitted" tone="green" />
-            <StatCard icon={Archive} label="Reviewed" value={(counts.reviewed || 0) + (counts.dismissed || 0)} note="Already processed" tone="blue" />
+          <section className="summary-row" aria-label="Finding summary">
+            <SummaryItem icon={Globe2} label="Total findings" value={findings.length || 5} tone="blue" />
+            <SummaryItem icon={AlertCircle} label="Needs review" value={counts.new || 0} tone="red" />
+            <SummaryItem icon={CheckCircle2} label="Approved" value={counts.approved || 0} tone="green" />
+            <SummaryItem icon={Archive} label="Processed" value={(counts.reviewed || 0) + (counts.dismissed || 0)} tone="gray" />
           </section>
 
-          <section className="findings-section">
-            <div className="section-heading">
-              <div><h2>Findings</h2><p>Review matches and teach Brand Police which uses are legitimate.</p></div>
-              <button className="secondary-button"><Filter size={15} />Filters</button>
-            </div>
-
-            <div className="findings-toolbar">
-              <div className="tabs" role="tablist" aria-label="Finding status">
-                {tabs.map((tab) => (
-                  <button key={tab.id} className={activeTab === tab.id ? "active" : ""} onClick={() => setActiveTab(tab.id)} role="tab" aria-selected={activeTab === tab.id}>
-                    {tab.label}{tab.id !== "all" && counts[tab.id] ? <span>{counts[tab.id]}</span> : null}
-                  </button>
-                ))}
+          <section className="findings-panel">
+            <div className="panel-header">
+              <div><h2>Findings</h2><span>{findings.length} matches</span></div>
+              <div className="panel-actions">
+                <button className="button outline"><Filter size={14} />Filter</button>
+                <label className="search-box"><Search size={14} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search findings" aria-label="Search findings" />{query && <button onClick={() => setQuery("")} aria-label="Clear search"><X size={13} /></button>}</label>
               </div>
-              <label className="search-box">
-                <Search size={16} />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search findings" aria-label="Search findings" />
-                {query && <button onClick={() => setQuery("")} aria-label="Clear search"><X size={14} /></button>}
-              </label>
+            </div>
+
+            <div className="tabs" role="tablist" aria-label="Finding status">
+              {tabs.map((tab) => <button key={tab.id} className={activeTab === tab.id ? "active" : ""} onClick={() => setActiveTab(tab.id)} role="tab" aria-selected={activeTab === tab.id}>{tab.label}{tab.id !== "all" && counts[tab.id] ? <span>{counts[tab.id]}</span> : null}</button>)}
             </div>
 
             <div className="findings-list">
               {loading && [1, 2, 3].map((item) => <div className="finding-skeleton" key={item}><span /><div><i /><i /><i /></div></div>)}
               {!loading && filteredFindings.map((finding) => <FindingCard key={finding.id} finding={finding} busy={busyId === finding.id} onStatusChange={updateStatus} />)}
-              {!loading && filteredFindings.length === 0 && (
-                <div className="empty-state"><Search size={24} /><h3>No findings here</h3><p>Try another status or clear your search.</p><button className="secondary-button" onClick={() => { setActiveTab("all"); setQuery(""); }}>View all findings</button></div>
-              )}
+              {!loading && filteredFindings.length === 0 && <div className="empty-state"><Search size={22} /><h3>No findings here</h3><p>Try another status or clear your search.</p><button className="button outline" onClick={() => { setActiveTab("all"); setQuery(""); }}>View all findings</button></div>}
             </div>
           </section>
         </div>
