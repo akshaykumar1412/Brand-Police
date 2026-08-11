@@ -1,14 +1,17 @@
 # Brand Police frontend
 
-Production-quality Brand Police interface for Brandy. The product shell, typography, navigation, controls, metrics, filters, and findings table are aligned to Brandy's brand administration panel. It runs as a static Next.js application today and switches to the real backend later without changing the UI.
+Brand Police is a customer-facing Brandy workflow for detecting, reviewing, and resolving potentially incorrect or unauthorized brand use.
 
-## Brandy UI integration
+## Prototype coverage
 
-- Uses Brandy's 224px administration sidebar and 54px page header
-- Uses Inter, Bootstrap Icons, neutral admin surfaces, and the same compact density
-- Uses Brandy's metric-card, filter-toolbar, status-badge, and table patterns
-- Adds Brand Police as a first-class admin navigation item
-- Reflows to Brandy's mobile admin header and slide-out navigation
+- Overview with compliance health, trends, activity, and priority findings
+- Findings with search, filtering, severity, ownership, and lifecycle status
+- Finding details with evidence, rule reasoning, assignment, comments, and resolution actions
+- New scan flow for domains, sitemaps, or individual URLs
+- Brand Space asset selection
+- Domains and compliance rule management
+- Responsive Brandy product navigation
+- Realistic demo data and local persistence
 
 ## Run locally
 
@@ -17,40 +20,21 @@ npm install
 npm run dev
 ```
 
-## Current demo mode
+## Demo mode
 
-When `NEXT_PUBLIC_BRAND_POLICE_API_URL` is not set, the app uses realistic seeded data and keeps review decisions in `localStorage`. Scans are simulated. No credentials, database, or paid scanning API are required.
+Without `NEXT_PUBLIC_BRAND_POLICE_API_URL`, findings and review decisions use local demo data. Scans are simulated and no paid scanning API is called.
 
-## Connect the production backend
+## Backend contract
 
-Set:
-
-```bash
-NEXT_PUBLIC_BRAND_POLICE_API_URL=https://api.example.com/brand-police
-```
-
-The frontend expects authenticated, tenant-scoped endpoints:
+Set `NEXT_PUBLIC_BRAND_POLICE_API_URL` to connect the production service. The frontend currently expects:
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `GET` | `/findings` | Return `{ findings: Finding[] }` |
-| `PATCH` | `/findings/:id` | Accept `{ status }` and return the updated finding |
-| `POST` | `/scans` | Start a scan and return `{ scanned, newFindings, completedAt }` |
+| `GET` | `/findings` | List tenant-scoped findings |
+| `PATCH` | `/findings/:id` | Update status, owner, or finding metadata |
+| `POST` | `/scans` | Queue a scan using target and asset selections |
 
-Authentication should use the existing Brandy session cookie. The server must enforce workspace and Brand Space access. Never trust a workspace or Brand Space ID supplied only by the client.
-
-## Production backend requirements
-
-- Queue scans outside the request lifecycle
-- Scope every finding and scan to workspace and Brand Space IDs
-- Rate limit scan creation
-- Deduplicate by Brand Space, source URL, matched asset, and scan window
-- Maintain approved-domain and approved-use records
-- Store scan history and first-seen/last-seen timestamps
-- Keep Google Vision or other provider credentials server-side
-- Send alerts only for newly discovered findings
-- Record review actions in an audit log
-- Use provider match terminology instead of presenting it as compliance certainty
+Authentication, tenancy, scheduling, provider credentials, evidence storage, audit logs, rate limits, and deduplication must remain server-side.
 
 ## Build
 
