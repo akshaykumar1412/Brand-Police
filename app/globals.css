@@ -8,3 +8,41 @@
 @media(max-width:767px){.shell-nav{transform:translateX(-100%);transition:.2s}.shell-nav.open{transform:none}.backdrop.show{position:fixed;inset:0;z-index:45;display:block;border:0;background:rgba(0,0,0,.4)}.workspace{margin-left:0}.mobile-menu{display:grid}.page-header{padding:0 14px}.page-header>div:first-of-type span,.page-header>div:first-of-type i{display:none}.page-content,.page-content.narrow{width:calc(100% - 28px);padding-top:23px}.title-row{align-items:flex-start}.scan-meta{display:none}.activity-list{grid-template-columns:1fr}.activity-list>div:nth-last-child(2){border-bottom:1px solid #f0eef2}.choice-grid{grid-template-columns:1fr}.asset-picker{grid-template-columns:1fr}.drawer{width:100%}.toolbar{flex-wrap:wrap}.search{width:100%}.result-count{margin-left:0}.header-actions .demo-chip{display:none}}
 @media(max-width:520px){.metrics-grid{grid-template-columns:1fr}.metric{padding:12px}.title-row{flex-direction:column}.overview-grid{gap:12px}.trend-panel,.activity-panel{padding:14px}.activity-list{display:block}.form-section{padding:18px 14px;grid-template-columns:24px 1fr}.form-footer{align-items:flex-end;gap:12px}.form-footer>span{max-width:150px}.asset-picker>button{grid-template-columns:34px 1fr 16px}.drawer-body{padding:14px}.drawer>footer{display:grid;grid-template-columns:1fr 1fr}.drawer>footer .primary{grid-column:1/3;grid-row:1}.mock-page{height:200px}.mock-content{height:138px}.detection-box{inset:45px 65px}.activity-panel{display:none}.rule-card{grid-template-columns:36px 1fr 34px}.rule-card>.row-menu{display:none}.header-actions .primary{padding:0 9px}.header-actions .primary i{margin:0}.header-actions .primary{font-size:0}.header-actions .primary i{font-size:13px}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Preserve the original Brand Police design system while extending its workflow. */
+:root{--muted:#74717d;--line:#e9e7ed;--soft:#f0eef3;--purple-dark:#5235d6;--green:#23875a;--red:#c55252;--blue:#3972cb;--shadow:0 12px 34px rgba(31,25,50,.08)}
+html,body{background:#f8f7fa}
+.shell-nav{width:248px;padding:23px 15px 16px;border-right:0;background:#111015;color:#f6f5f8}
+.brand-bar{height:auto;padding:0 9px 22px;border-bottom:0}
+.brandy-logo{width:26px;height:26px;border-radius:8px;background:#7257f4;transform:rotate(-4deg)}
+.brand-bar strong{font-size:18px;letter-spacing:-.4px}
+.brand-bar button:hover{background:#1d1b22;color:#dedbe2}
+.space-context{margin:0 0 26px;padding:9px 10px;grid-template-columns:32px 1fr 16px;gap:10px;border-color:#2a2830;border-radius:10px;background:#1d1b22;color:#f8f7fa}
+.space-avatar{width:32px;height:32px;border-radius:8px;background:linear-gradient(145deg,#ffcf95,#f39b7e);color:#4c291b}
+.space-context small,.space-context>i{color:#8d8994}
+.main-nav{padding:0}
+.main-nav>small{margin:19px 10px 8px;color:#6f6b77;letter-spacing:.13em}
+.main-nav button{height:auto;margin-bottom:3px;padding:9px 11px;border-radius:8px;color:#99959f;font-size:12px}
+.main-nav button:hover{background:#1d1b22;color:#dedbe2}
+.main-nav button.active{background:#27232f;color:#fff;font-weight:500}
+.main-nav button.active:before{left:-15px;width:3px;height:21px;border-radius:0 3px 3px 0;background:#8069f6}
+.main-nav button b{min-width:19px;border-radius:99px;background:#674ce5;color:#fff}
+.user-bar{height:auto;margin-top:15px;padding:14px 8px 2px;border-top-color:#29272e}
+.user-bar>span:first-child{width:32px;height:32px;background:#ece8ff;color:#5d45cf}
+.user-bar strong{color:#f0eef2;font-weight:500}.user-bar small,.user-bar>i{color:#77727f}
+.workspace{margin-left:248px;background:#f8f7fa}
+.page-header{height:62px;padding:0 34px;background:rgba(255,255,255,.93);backdrop-filter:blur(10px)}
+.page-content{width:min(1100px,calc(100% - 64px));padding:45px 0 80px}
+.page-content.narrow{width:min(850px,calc(100% - 64px))}
+.title-row{margin-bottom:28px}.title-row h1{font-size:31px;letter-spacing:-1px}.title-row p{font-size:13px}
+.primary,.secondary{border-radius:8px;font-size:11px}.primary{border-color:var(--purple);background:var(--purple);box-shadow:0 4px 12px rgba(101,72,232,.2)}.primary:hover{border-color:var(--purple-dark);background:var(--purple-dark)}
+.secondary{border-color:#dedbe4;color:#615e68}.secondary:hover{border-color:#bbb5c4;background:#fbfafc;color:var(--ink)}
+.panel,.metric,.choice-grid>button,.asset-picker>button,.rule-card{border-color:var(--line);border-radius:11px;box-shadow:0 1px 2px rgba(19,17,25,.04)}
+.metric{padding:15px}.metric-icon{border-radius:9px}.toolbar,th,.form-footer{background:#faf9fb}
+.search input,.toolbar select,.panel-heading select,.field input,.field select,.field textarea{border-color:#e0dde5;border-radius:8px}
+.search input:focus,.field input:focus,.field textarea:focus{border-color:#9888e8;box-shadow:0 0 0 3px rgba(101,72,232,.09)}
+.badge{border-radius:99px}.drawer,.modal{box-shadow:var(--shadow)}
+.rule-callout{border-color:#ddd5ff;background:#f7f4ff;color:#6349d6}
+.text-button,.evidence-meta a,.comment-box button{color:var(--purple)}
+@media(max-width:767px){.workspace{margin-left:0}.page-header{padding:0 20px}.page-content,.page-content.narrow{width:min(100% - 36px,680px);padding-top:32px}}
+@media(max-width:520px){.page-content,.page-content.narrow{width:calc(100% - 28px)}.title-row h1{font-size:26px}}
