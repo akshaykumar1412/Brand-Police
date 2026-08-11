@@ -4,13 +4,17 @@ Brand Police is a customer-facing Brandy workflow for detecting, reviewing, and 
 
 ## Prototype coverage
 
+- Brandy customer product shell with the 68px nav rail and curved workspace
 - Overview with compliance health, trends, activity, and priority findings
-- Findings with search, filtering, severity, ownership, and lifecycle status
+- Findings with saved views, filtering, selection, and bulk actions
 - Finding details with evidence, rule reasoning, assignment, comments, and resolution actions
-- New scan flow for domains, sitemaps, or individual URLs
-- Brand Space asset selection
-- Domains and compliance rule management
-- Responsive Brandy product navigation
+- Manual and scheduled scans with scan history
+- Pre-publish checks for images, PDFs, and presentations
+- Monitored asset management connected to Brand Space
+- Domain classification and compliance rule management
+- Compliance reports and domain scorecards
+- Monitoring, notification, and evidence retention settings
+- Responsive Brandy product navigation using the current DM Sans type system
 - Realistic demo data and local persistence
 
 ## Run locally
