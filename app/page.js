@@ -28,41 +28,46 @@ const rulesSeed = [
 function Logo(){ return <span className="brandy-logo"><span>b</span></span>; }
 
 function ShellNav({ active, onNavigate, mobileOpen, setMobileOpen }){
-  const go = (id) => { onNavigate(id); setMobileOpen(false); };
   return <>
     <button className={`backdrop ${mobileOpen?"show":""}`} onClick={()=>setMobileOpen(false)} aria-label="Close navigation" />
     <aside className={`shell-nav ${mobileOpen?"open":""}`}>
       <div className="brand-bar"><Logo/><strong>Brandy</strong><button aria-label="Open Brand Space"><i className="bi bi-box-arrow-up-right"/></button></div>
-      <div className="space-context"><span className="space-avatar">B</span><span><strong>Brandy</strong><small>Brand Space</small></span><i className="bi bi-chevron-expand"/></div>
-      <nav className="main-nav" aria-label="Brand Space navigation">
+      <nav className="main-nav" aria-label="Brandy admin navigation">
         <button><i className="bi bi-house"/><span>Home</span></button>
-        <button><i className="bi bi-collection"/><span>Content</span></button>
+        <button><i className="bi bi-bar-chart"/><span>Analytics</span></button>
+        <button><i className="bi bi-activity"/><span>Activity</span></button>
+        <button><i className="bi bi-inbox"/><span>Download Requests</span></button>
         <button><i className="bi bi-people"/><span>Team</span></button>
-        <small>BRAND POLICE</small>
-        {productNav.map(([icon,label,id,count])=><button key={id} className={active===id?"active":""} onClick={()=>go(id)}><i className={`bi ${icon}`}/><span>{label}</span>{count?<b>{count}</b>:null}</button>)}
+        <button><i className="bi bi-collection"/><span>Content</span></button>
+        <button className="active"><i className="bi bi-shield-check"/><span>Brand Police</span><b>3</b></button>
+        <button><i className="bi bi-gear"/><span>Settings</span></button>
       </nav>
-      <div className="user-bar"><span>AK</span><span><strong>Akshay Kumar</strong><small>Admin</small></span><i className="bi bi-three-dots"/></div>
+      <div className="user-bar"><span>AK</span><span><strong>Akshay Kumar</strong><small>akshay@brandyhq.com</small></span><i className="bi bi-chevron-up"/></div>
     </aside>
   </>;
 }
 
-function PageHeader({ active, onScan, mobileOpen, setMobileOpen }){
-  const titles={overview:"Overview",findings:"Findings",scan:"New scan",domains:"Domains & rules"};
-  return <header className="page-header">
-    <button className="mobile-menu" onClick={()=>setMobileOpen(!mobileOpen)}><i className="bi bi-list"/></button>
-    <div><span>Brand Police</span><i className="bi bi-chevron-right"/><strong>{titles[active]}</strong></div>
-    <div className="header-actions"><span className="demo-chip">Demo mode</span>{active!=="scan"&&<button className="primary" onClick={onScan}><i className="bi bi-radar"/>New scan</button>}</div>
-  </header>;
+function PageHeader({ active, onNavigate, onScan, mobileOpen, setMobileOpen }){
+  return <>
+    <header className="page-header">
+      <button className="mobile-menu" onClick={()=>setMobileOpen(!mobileOpen)}><i className="bi bi-list"/></button>
+      <h2>Brand Police</h2>
+      <div className="header-actions"><span className="demo-chip">Demo mode</span>{active!=="scan"&&<button className="primary" onClick={onScan}><i className="bi bi-radar"/>New scan</button>}</div>
+    </header>
+    <nav className="product-tabs" aria-label="Brand Police sections">
+      {productNav.map(([icon,label,id,count])=><button key={id} className={active===id?"active":""} onClick={()=>onNavigate(id)}><i className={`bi ${icon}`}/><span>{label}</span>{count?<b>{count}</b>:null}</button>)}
+    </nav>
+  </>;
 }
 
-function Metric({label,value,change,icon,tone,onClick}){ return <button className="metric" onClick={onClick}><span className={`metric-icon ${tone}`}><i className={`bi ${icon}`}/></span><span><small>{label}</small><strong>{value}</strong>{change&&<em>{change}</em>}</span></button>; }
+function Metric({label,value,change,icon,tone,onClick}){ return <button className="metric" onClick={onClick}><span className={`metric-icon ${tone}`}><i className={`bi ${icon}`}/></span><small>{label}</small><span className="metric-value"><strong>{value}</strong>{change&&<em>{change}</em>}</span></button>; }
 function Badge({children,tone="gray"}){ return <span className={`badge ${tone}`}>{children}</span>; }
 function Status({status}){ const map={new:["Needs review","amber"],reviewing:["Reviewing","blue"],approved:["Approved","green"],dismissed:["Dismissed","gray"],resolved:["Resolved","purple"]}; const [label,tone]=map[status]||[status,"gray"]; return <Badge tone={tone}>{label}</Badge>; }
 function Severity({value}){ return <span className={`severity ${value}`}><i/>{value}</span>; }
 
 function EmptyChart(){ return <div className="trend-chart" aria-label="Compliance trend over seven days">
   <div className="chart-labels"><span>100</span><span>75</span><span>50</span><span>25</span></div>
-  <div className="chart-grid"><i/><i/><i/><i/><svg viewBox="0 0 700 150" preserveAspectRatio="none"><defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#6548e8" stopOpacity=".18"/><stop offset="1" stopColor="#6548e8" stopOpacity="0"/></linearGradient></defs><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26 L700,150 L0,150 Z" fill="url(#fill)"/><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26" fill="none" stroke="#6548e8" strokeWidth="3"/></svg></div>
+  <div className="chart-grid"><i/><i/><i/><i/><svg viewBox="0 0 700 150" preserveAspectRatio="none"><defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#525252" stopOpacity=".16"/><stop offset="1" stopColor="#525252" stopOpacity="0"/></linearGradient></defs><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26 L700,150 L0,150 Z" fill="url(#fill)"/><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26" fill="none" stroke="#525252" strokeWidth="3"/></svg></div>
   <div className="chart-days"><span>Aug 5</span><span>Aug 6</span><span>Aug 7</span><span>Aug 8</span><span>Aug 9</span><span>Aug 10</span><span>Today</span></div>
   </div>;
 }
@@ -154,5 +159,5 @@ export default function BrandPolicePage(){
   const update=async(id,patch)=>{const before=findings;setFindings(x=>x.map(f=>f.id===id?{...f,...patch}:f));try{await brandPoliceService.updateFinding(id,patch);setToast({message:"Finding updated."});}catch{setFindings(before);setToast({tone:"error",message:"That update could not be saved."});}};
   const run=async payload=>{try{return await brandPoliceService.runScan(payload);}catch{setToast({tone:"error",message:"The scan could not be started."});throw new Error();}};
   const navigate=id=>{setActive(id);window.scrollTo({top:0,behavior:"smooth"});};
-  return <div className="app-shell"><ShellNav active={active} onNavigate={navigate} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen}/><main className="workspace"><PageHeader active={active} onScan={()=>navigate("scan")} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen}/>{loading?<div className="loading-screen"><i className="bi bi-arrow-repeat spinning"/><span>Loading Brand Police</span></div>:<>{active==="overview"&&<Overview findings={findings} onNavigate={navigate} onOpen={f=>setSelectedId(f.id)}/>} {active==="findings"&&<Findings findings={findings} onOpen={f=>setSelectedId(f.id)} onUpdate={update}/>} {active==="scan"&&<NewScan onRun={run}/>} {active==="domains"&&<DomainsRules/>}</>} </main><FindingDrawer finding={selected} onClose={()=>setSelectedId(null)} onUpdate={update}/><Toast toast={toast} onClose={()=>setToast(null)}/></div>;
+  return <div className="app-shell"><ShellNav active={active} onNavigate={navigate} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen}/><main className="workspace"><PageHeader active={active} onNavigate={navigate} onScan={()=>navigate("scan")} mobileOpen={mobileOpen} setMobileOpen={setMobileOpen}/>{loading?<div className="loading-screen"><i className="bi bi-arrow-repeat spinning"/><span>Loading Brand Police</span></div>:<>{active==="overview"&&<Overview findings={findings} onNavigate={navigate} onOpen={f=>setSelectedId(f.id)}/>} {active==="findings"&&<Findings findings={findings} onOpen={f=>setSelectedId(f.id)} onUpdate={update}/>} {active==="scan"&&<NewScan onRun={run}/>} {active==="domains"&&<DomainsRules/>}</>} </main><FindingDrawer finding={selected} onClose={()=>setSelectedId(null)} onUpdate={update}/><Toast toast={toast} onClose={()=>setToast(null)}/></div>;
 }
