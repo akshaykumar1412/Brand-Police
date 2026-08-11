@@ -4,20 +4,14 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { brandPoliceService } from "../lib/brand-police-service";
 
 const navigation = [
-  { group: "Monitor", items: [
-    ["bi-grid", "Overview", "overview"],
-    ["bi-search", "Findings", "findings", 3],
-    ["bi-radar", "Scans", "scans"],
-  ]},
-  { group: "Check", items: [
-    ["bi-cloud-arrow-up", "Upload check", "upload"],
-    ["bi-images", "Monitored assets", "assets"],
-  ]},
-  { group: "Manage", items: [
-    ["bi-globe2", "Domains", "domains"],
-    ["bi-journal-check", "Rules", "rules"],
-    ["bi-graph-up-arrow", "Reports", "reports"],
-  ]},
+  ["Overview", "overview"],
+  ["Findings", "findings", 3],
+  ["Scans", "scans"],
+  ["Upload check", "upload"],
+  ["Assets", "assets"],
+  ["Domains", "domains"],
+  ["Rules", "rules"],
+  ["Reports", "reports"],
 ];
 
 const domainsSeed = [
@@ -53,7 +47,6 @@ const scansSeed = [
   { id:"SC-014", target:"All monitored domains", type:"Scheduled", status:"Completed", pages:217, new:2, date:"Aug 9, 6:00 AM", duration:"6m 44s" },
 ];
 
-function Logo(){ return <span className="brandy-mark">b</span>; }
 function Badge({children,tone="gray"}){ return <span className={`badge ${tone}`}>{children}</span>; }
 function Severity({value}){ return <span className={`severity ${value}`}><i/>{value}</span>; }
 function Status({status}){ const map={new:["Needs review","amber"],reviewing:["Reviewing","blue"],approved:["Approved","green"],dismissed:["Dismissed","gray"],resolved:["Resolved","purple"]}; const item=map[status]||[status,"gray"]; return <Badge tone={item[1]}>{item[0]}</Badge>; }
@@ -76,37 +69,22 @@ function ProductRail(){
   </aside>;
 }
 
-function FeatureNav({active,onNavigate,open,onClose}){
-  return <>
-    <button className={`mobile-backdrop ${open?"show":""}`} onClick={onClose} aria-label="Close navigation"/>
-    <aside className={`feature-nav ${open?"open":""}`}>
-      <div className="feature-brand"><Logo/><div><strong>Brand Police</strong><small>Brandy</small></div><Badge tone="soft">Beta</Badge></div>
-      <div className="health-card"><div><span>Brand health</span><strong>84%</strong></div><div className="health-track"><i/></div><small><i/> Monitoring 4 domains</small></div>
-      <nav>
-        {navigation.map(section=><div className="nav-group" key={section.group}><small>{section.group}</small>{section.items.map(([icon,label,id,count])=><button key={id} className={active===id?"active":""} onClick={()=>{onNavigate(id);onClose();}}><i className={`bi ${icon}`}/><span>{label}</span>{count?<b>{count}</b>:null}</button>)}</div>)}
-      </nav>
-      <div className="feature-nav-footer"><button onClick={()=>onNavigate("settings")} className={active==="settings"?"active":""}><i className="bi bi-sliders"/><span>Brand Police settings</span></button><small>Last scan completed 12 min ago</small></div>
-    </aside>
-  </>;
-}
-
-function Header({active,onMenu,onNavigate}){
-  const label=navigation.flatMap(x=>x.items).find(x=>x[2]===active)?.[1] || (active==="settings"?"Settings":"Brand Police");
-  return <header className="page-header"><button className="mobile-menu" onClick={onMenu}><i className="bi bi-list"/></button><div><span>Brand Police</span><i className="bi bi-chevron-right"/><strong>{label}</strong></div><div className="header-actions"><button className="icon-button" title="Notifications"><i className="bi bi-bell"/><b/></button><span className="demo-chip">Demo mode</span>{active!=="scans"&&<button className="primary" onClick={()=>onNavigate("scans")}><i className="bi bi-radar"/>New scan</button>}</div></header>;
+function Header({active,onNavigate}){
+  return <><header className="page-header"><div className="feature-title"><strong>Brand Police</strong><Badge tone="soft">Beta</Badge></div><div className="header-actions"><button className="icon-button" title="Notifications"><i className="bi bi-bell"/><b/></button><button className={`icon-button ${active==="settings"?"active":""}`} title="Settings" onClick={()=>onNavigate("settings")}><i className="bi bi-gear"/></button>{active!=="scans"&&<button className="primary" onClick={()=>onNavigate("scans")}><i className="bi bi-plus"/>New scan</button>}</div></header><nav className="feature-tabs" aria-label="Brand Police sections">{navigation.map(([label,id,count])=><button key={id} className={active===id?"active":""} onClick={()=>onNavigate(id)}><span>{label}</span>{count?<b>{count}</b>:null}</button>)}</nav></>;
 }
 
 function PageTitle({title,description,children}){ return <div className="title-row"><div><h1>{title}</h1><p>{description}</p></div>{children}</div>; }
 function Metric({label,value,change,icon,tone,onClick}){ return <button className="metric" onClick={onClick}><span className={`metric-icon ${tone}`}><i className={`bi ${icon}`}/></span><small>{label}</small><strong>{value}</strong><em>{change}</em></button>; }
 function SourceCell({finding}){ return <div className="source-cell"><span className={`source-thumb ${finding.tone}`}>b</span><span><strong>{finding.page}</strong><small>{finding.domain} · {finding.id}</small></span></div>; }
 
-function TrendChart(){ return <div className="trend-chart"><div className="chart-labels"><span>100</span><span>75</span><span>50</span></div><div className="chart-grid"><i/><i/><i/><svg viewBox="0 0 700 150" preserveAspectRatio="none"><defs><linearGradient id="score-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#de6b1f" stopOpacity=".18"/><stop offset="1" stopColor="#de6b1f" stopOpacity="0"/></linearGradient></defs><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26 L700,150 L0,150 Z" fill="url(#score-fill)"/><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26" fill="none" stroke="#de6b1f" strokeWidth="3"/></svg></div><div className="chart-days"><span>Aug 5</span><span>Aug 6</span><span>Aug 7</span><span>Aug 8</span><span>Aug 9</span><span>Aug 10</span><span>Today</span></div></div>; }
+function TrendChart(){ return <div className="trend-chart"><div className="chart-labels"><span>100</span><span>75</span><span>50</span></div><div className="chart-grid"><i/><i/><i/><svg viewBox="0 0 700 150" preserveAspectRatio="none"><defs><linearGradient id="score-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#424242" stopOpacity=".12"/><stop offset="1" stopColor="#424242" stopOpacity="0"/></linearGradient></defs><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26 L700,150 L0,150 Z" fill="url(#score-fill)"/><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26" fill="none" stroke="#424242" strokeWidth="2"/></svg></div><div className="chart-days"><span>Aug 5</span><span>Aug 6</span><span>Aug 7</span><span>Aug 8</span><span>Aug 9</span><span>Aug 10</span><span>Today</span></div></div>; }
 
 function Overview({findings,onNavigate,onOpen}){
   const urgent=findings.filter(x=>x.status==="new").slice(0,3);
-  return <div className="page-content"><PageTitle title="Brand health at a glance" description="Monitor external brand usage, prioritise violations, and track resolution."><div className="scan-meta"><span className="live-dot"/><span><small>Monitoring active</small><strong>4 domains · 217 pages</strong></span></div></PageTitle>
-    <section className="metrics-grid"><Metric label="Compliance score" value="84%" change="Up 6% this month" icon="bi-shield-check" tone="orange"/><Metric label="Needs review" value={findings.filter(x=>x.status==="new").length} change="3 new today" icon="bi-exclamation-triangle" tone="amber" onClick={()=>onNavigate("findings")}/><Metric label="Active violations" value="4" change="2 high severity" icon="bi-flag" tone="red"/><Metric label="Resolved this month" value="18" change="Average 2.4 days" icon="bi-check2-circle" tone="green"/></section>
-    <div className="overview-grid"><section className="panel trend-panel"><div className="panel-heading"><div><h2>Compliance trend</h2><p>Score across monitored domains</p></div><select><option>Last 7 days</option><option>Last 30 days</option></select></div><TrendChart/></section><section className="panel activity-panel"><div className="panel-heading"><div><h2>Recent activity</h2><p>Latest events</p></div></div><div className="activity-list"><div><span className="activity-icon red"><i className="bi bi-flag"/></span><p><strong>High severity finding detected</strong><small>brandfetch.com · 12 min ago</small></p></div><div><span className="activity-icon green"><i className="bi bi-check2"/></span><p><strong>Violation marked resolved</strong><small>designmodo.com · Yesterday</small></p></div><div><span className="activity-icon blue"><i className="bi bi-person"/></span><p><strong>Finding assigned to Himanshi</strong><small>producthunt.com · Yesterday</small></p></div><div><span className="activity-icon gray"><i className="bi bi-radar"/></span><p><strong>Scheduled scan completed</strong><small>248 pages checked · Aug 9</small></p></div></div></section></div>
-    <section className="panel urgent-panel"><div className="panel-heading"><div><h2>Priority findings</h2><p>Items that need attention first</p></div><button className="text-button" onClick={()=>onNavigate("findings")}>View all <i className="bi bi-arrow-right"/></button></div><div className="table-scroll"><table><thead><tr><th>Finding</th><th>Issue</th><th>Severity</th><th>Owner</th><th>Last seen</th><th/></tr></thead><tbody>{urgent.map(f=><tr key={f.id} onClick={()=>onOpen(f)}><td><SourceCell finding={f}/></td><td>{f.issue}</td><td><Severity value={f.severity}/></td><td>{f.owner}</td><td className="muted">{f.lastSeen}</td><td><i className="bi bi-chevron-right muted"/></td></tr>)}</tbody></table></div></section>
+  return <div className="page-content"><PageTitle title="Brand Police" description="Find incorrect or unauthorised brand usage, review the evidence, and resolve it."><div className="scan-meta"><span className="live-dot"/><span><small>Monitoring active</small><strong>Last checked 12 minutes ago</strong></span></div></PageTitle>
+    <section className="monitoring-summary panel"><div className="monitoring-copy"><span className="monitoring-icon"><i className="bi bi-shield-check"/></span><div><Badge tone="green">Monitoring active</Badge><h2>Your brand is being monitored</h2><p>Brand Police checks 4 domains and 5 approved assets. Three new findings need review.</p></div></div><div className="monitoring-facts"><span><strong>84%</strong><small>Brand health</small></span><span><strong>217</strong><small>Pages checked</small></span><span><strong>{findings.filter(x=>x.status==="new").length}</strong><small>Needs review</small></span></div><button className="primary" onClick={()=>onNavigate("findings")}>Review findings</button></section>
+    <div className="overview-grid native-overview"><section className="panel urgent-panel"><div className="panel-heading"><div><h2>Needs your attention</h2><p>New findings ordered by severity</p></div><button className="text-button" onClick={()=>onNavigate("findings")}>View all <i className="bi bi-arrow-right"/></button></div><div className="table-scroll"><table><thead><tr><th>Finding</th><th>Issue</th><th>Severity</th><th>Last seen</th><th/></tr></thead><tbody>{urgent.map(f=><tr key={f.id} onClick={()=>onOpen(f)}><td><SourceCell finding={f}/></td><td>{f.issue}</td><td><Severity value={f.severity}/></td><td className="muted">{f.lastSeen}</td><td><i className="bi bi-chevron-right muted"/></td></tr>)}</tbody></table></div></section><section className="panel activity-panel"><div className="panel-heading"><div><h2>Recent activity</h2><p>Latest changes</p></div></div><div className="activity-list"><div><span className="activity-icon red"><i className="bi bi-flag"/></span><p><strong>High severity finding detected</strong><small>brandfetch.com · 12 min ago</small></p></div><div><span className="activity-icon green"><i className="bi bi-check2"/></span><p><strong>Violation marked resolved</strong><small>designmodo.com · Yesterday</small></p></div><div><span className="activity-icon gray"><i className="bi bi-radar"/></span><p><strong>Scheduled scan completed</strong><small>248 pages checked · Aug 9</small></p></div></div></section></div>
+    <section className="quick-actions"><button onClick={()=>onNavigate("scans")}><i className="bi bi-search"/><span><strong>Scan a website</strong><small>Check a domain, sitemap, or URL</small></span><i className="bi bi-arrow-right"/></button><button onClick={()=>onNavigate("upload")}><i className="bi bi-cloud-arrow-up"/><span><strong>Check a creative</strong><small>Review a file before publishing</small></span><i className="bi bi-arrow-right"/></button><button onClick={()=>onNavigate("rules")}><i className="bi bi-journal-check"/><span><strong>Manage rules</strong><small>Choose what Brand Police checks</small></span><i className="bi bi-arrow-right"/></button></section>
   </div>;
 }
 
@@ -167,10 +145,10 @@ function Settings(){ const [email,setEmail]=useState(true); const [high,setHigh]
 function Toast({toast,onClose}){ if(!toast)return null; return <div className={`toast ${toast.tone||"success"}`}><i className={`bi ${toast.tone==="error"?"bi-exclamation-circle":"bi-check-circle"}`}/><span>{toast.message}</span><button onClick={onClose}><i className="bi bi-x"/></button></div>; }
 
 export default function BrandPolicePage(){
-  const [active,setActive]=useState("overview"); const [navOpen,setNavOpen]=useState(false); const [findings,setFindings]=useState([]); const [loading,setLoading]=useState(true); const [selectedId,setSelectedId]=useState(null); const [toast,setToast]=useState(null);
+  const [active,setActive]=useState("overview"); const [findings,setFindings]=useState([]); const [loading,setLoading]=useState(true); const [selectedId,setSelectedId]=useState(null); const [toast,setToast]=useState(null);
   useEffect(()=>{brandPoliceService.listFindings().then(r=>setFindings(r.findings)).catch(()=>setToast({tone:"error",message:"Findings could not be loaded."})).finally(()=>setLoading(false));},[]);
   const selected=findings.find(f=>f.id===selectedId); const navigate=id=>{setActive(id);window.scrollTo({top:0,behavior:"smooth"});};
   const update=async(id,patch)=>{const before=findings;setFindings(x=>x.map(f=>f.id===id?{...f,...patch}:f));try{await brandPoliceService.updateFinding(id,patch);setToast({message:"Finding updated."});}catch{setFindings(before);setToast({tone:"error",message:"That update could not be saved."});}};
   const run=async payload=>{try{return await brandPoliceService.runScan(payload);}catch{setToast({tone:"error",message:"The scan could not be started."});throw new Error();}};
-  return <div className="app-shell"><div className="accent-glow"/><ProductRail/><div className="curved-workspace"><FeatureNav active={active} onNavigate={navigate} open={navOpen} onClose={()=>setNavOpen(false)}/><main className="workspace"><Header active={active} onMenu={()=>setNavOpen(true)} onNavigate={navigate}/>{loading?<div className="loading-screen"><i className="bi bi-arrow-repeat spinning"/>Loading Brand Police</div>:<>{active==="overview"&&<Overview findings={findings} onNavigate={navigate} onOpen={f=>setSelectedId(f.id)}/>} {active==="findings"&&<Findings findings={findings} onOpen={f=>setSelectedId(f.id)} onUpdate={update}/>} {active==="scans"&&<Scans onRun={run}/>} {active==="upload"&&<UploadCheck/>} {active==="assets"&&<Assets/>} {active==="domains"&&<Domains/>} {active==="rules"&&<Rules/>} {active==="reports"&&<Reports/>} {active==="settings"&&<Settings/>}</>}</main></div><FindingDrawer finding={selected} onClose={()=>setSelectedId(null)} onUpdate={update}/><Toast toast={toast} onClose={()=>setToast(null)}/></div>;
+  return <div className="app-shell"><div className="accent-glow"/><ProductRail/><div className="curved-workspace"><main className="workspace"><Header active={active} onNavigate={navigate}/>{loading?<div className="loading-screen"><i className="bi bi-arrow-repeat spinning"/>Loading Brand Police</div>:<>{active==="overview"&&<Overview findings={findings} onNavigate={navigate} onOpen={f=>setSelectedId(f.id)}/>} {active==="findings"&&<Findings findings={findings} onOpen={f=>setSelectedId(f.id)} onUpdate={update}/>} {active==="scans"&&<Scans onRun={run}/>} {active==="upload"&&<UploadCheck/>} {active==="assets"&&<Assets/>} {active==="domains"&&<Domains/>} {active==="rules"&&<Rules/>} {active==="reports"&&<Reports/>} {active==="settings"&&<Settings/>}</>}</main></div><FindingDrawer finding={selected} onClose={()=>setSelectedId(null)} onUpdate={update}/><Toast toast={toast} onClose={()=>setToast(null)}/></div>;
 }
