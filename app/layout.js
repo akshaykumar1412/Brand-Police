@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Brand Police | Brandy",
-  description: "Detect, review, and resolve brand misuse.",
+  title: "Brand Consciousness AI | Brandy",
+  description: "Build, improve, govern, monitor, and support your brand with five connected AI agents.",
 };
 
 export default function RootLayout({ children }) {
