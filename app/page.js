@@ -95,35 +95,19 @@ function SourceCell({finding}){ return <div className="source-cell"><span classN
 function TrendChart(){ return <div className="trend-chart"><div className="chart-labels"><span>100</span><span>75</span><span>50</span></div><div className="chart-grid"><i/><i/><i/><svg viewBox="0 0 700 150" preserveAspectRatio="none"><defs><linearGradient id="score-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#424242" stopOpacity=".12"/><stop offset="1" stopColor="#424242" stopOpacity="0"/></linearGradient></defs><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26 L700,150 L0,150 Z" fill="url(#score-fill)"/><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26" fill="none" stroke="#424242" strokeWidth="2"/></svg></div><div className="chart-days"><span>Aug 5</span><span>Aug 6</span><span>Aug 7</span><span>Aug 8</span><span>Aug 9</span><span>Aug 10</span><span>Today</span></div></div>; }
 
 function AgentHub({onSelect}){
-  return <div className="page-content ai-hub ai-home">
-    <section className="ai-home-intro">
-      <div><span className="ai-eyebrow"><i className="bi bi-stars"/>Brand Consciousness AI</span><h1>Your brand is continuously understood, improved and protected.</h1><p>Five agents share the context already inside this Brand Space. Start with what needs your attention, or open any agent directly.</p></div>
-      <div className="ai-home-actions"><button className="primary" onClick={()=>onSelect("police")}>Review 3 findings <i className="bi bi-arrow-right"/></button><button className="secondary"><i className="bi bi-arrow-repeat"/>Sync Brand Space</button><small>Last synced 12 minutes ago</small></div>
+  return <div className="page-content ai-hub ai-addon-home">
+    <div className="addon-title-row"><div><h1>AI agents</h1><p>Use Brandy’s AI tools with the assets and guidelines already in this Brand Space.</p></div><button className="secondary"><i className="bi bi-arrow-repeat"/>Sync Brand Space</button></div>
+
+    <section className="addon-connection"><span><i className="bi bi-check2"/></span><div><strong>Connected to this Brand Space</strong><small>172 items and 24 guideline rules synced 12 minutes ago</small></div><Badge tone="green">Up to date</Badge></section>
+
+    <section className="addon-attention"><span><i className="bi bi-shield-exclamation"/></span><div><strong>3 findings need review</strong><small>Brand Police detected an old logo, altered mark and colour mismatch.</small></div><button className="primary" onClick={()=>onSelect("police")}>Review findings</button></section>
+
+    <div className="addon-section-heading"><div><h2>Available agents</h2><p>Each agent works directly with the active Brand Space.</p></div></div>
+    <section className="addon-agent-grid">
+      {agents.map(agent=><button key={agent.id} className="addon-agent" onClick={()=>onSelect(agent.id)}><span className="addon-agent-icon"><i className={`bi ${agent.icon}`}/></span><span className="addon-agent-copy"><span><strong>{agent.name}</strong><Badge tone={agent.id==="police"?"amber":"soft"}>{agent.status}</Badge></span><p>{agent.description}</p><small>{agent.metric}</small></span><i className="bi bi-chevron-right"/></button>)}
     </section>
 
-    <section className="ai-home-status" aria-label="Current brand status">
-      <div className="brand-health-summary"><span className="health-score">84</span><span><strong>Brand health is good</strong><small>Up 6 points this month</small></span></div>
-      <div className="health-measure"><span><i style={{width:"84%"}}/></span><small>Based on 172 brand items, 4 monitored domains and 24 guideline rules</small></div>
-      <div className="health-facts"><span><strong>3</strong><small>Need review</small></span><span><strong>2</strong><small>Open decisions</small></span><span><strong>4</strong><small>Domains monitored</small></span></div>
-    </section>
-
-    <section className="ai-priority">
-      <span className="priority-icon"><i className="bi bi-shield-exclamation"/></span><div><small>PRIORITY</small><h2>Three external brand uses need review</h2><p>An old logo, an altered mark and one colour mismatch were detected on partner websites.</p></div><button className="secondary" onClick={()=>onSelect("police")}>Open Brand Police <i className="bi bi-arrow-right"/></button>
-    </section>
-
-    <section className="agent-system">
-      <header><div><small>CONNECTED WORKFLOW</small><h2>Five agents, one brand context</h2></div><p>Each agent has one clear job. Signals and decisions move between them automatically.</p></header>
-      <div className="agent-flow">
-        {agents.map((agent,index)=><button key={agent.id} className="agent-flow-item" onClick={()=>onSelect(agent.id)}>
-          <span className="flow-step">{String(index+1).padStart(2,"0")}</span><span className="flow-icon"><i className={`bi ${agent.icon}`}/></span><span className="flow-copy"><small>{agent.role}</small><strong>{agent.name}</strong><em>{agent.description}</em><b><i/>{agent.status}</b></span><i className="bi bi-arrow-right flow-arrow"/>
-        </button>)}
-      </div>
-    </section>
-
-    <section className="ai-home-lower">
-      <div className="recent-signals"><header><div><small>RECENT SIGNALS</small><h2>What changed</h2></div><button>View all activity</button></header><div className="signal-list"><article><span className="signal-time">18m</span><i className="bi bi-compass"/><p><strong>New colour detected</strong><small>Sent by Brand Architect to Brand Coach for review</small></p></article><article><span className="signal-time">1h</span><i className="bi bi-shield-check"/><p><strong>Monitoring re-check completed</strong><small>Brand Police scanned four connected domains</small></p></article><article><span className="signal-time">3h</span><i className="bi bi-person-badge"/><p><strong>Logo retirement recorded</strong><small>Chief Brand Officer updated the decision history</small></p></article></div></div>
-      <button className="support-prompt" onClick={()=>onSelect("support")}><span><i className="bi bi-chat-square-text"/></span><div><small>BRANDY SUPPORT AGENT</small><strong>Ask Brandy anything</strong><p>Get help using the context of this Brand Space.</p></div><i className="bi bi-arrow-up-right"/></button>
-    </section>
+    <section className="addon-recent"><header><div><h2>Recent agent activity</h2><p>Changes made using this Brand Space</p></div><button className="text-button">View all</button></header><div className="signal-list"><article><span className="signal-time">18m</span><i className="bi bi-compass"/><p><strong>New colour detected</strong><small>Brand Architect sent it to Brand Coach for review</small></p></article><article><span className="signal-time">1h</span><i className="bi bi-shield-check"/><p><strong>Monitoring re-check completed</strong><small>Brand Police scanned four connected domains</small></p></article><article><span className="signal-time">3h</span><i className="bi bi-person-badge"/><p><strong>Logo retirement recorded</strong><small>Chief Brand Officer updated the decision history</small></p></article></div></section>
   </div>;
 }
 
