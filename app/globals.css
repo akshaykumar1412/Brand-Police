@@ -3556,6 +3556,227 @@ tbody tr:hover {
   }
 }
 
+/* AI agents are a Brandy add-on, not a standalone product. */
+.ai-addon-home {
+  max-width: 1080px;
+  padding-top: 34px;
+  padding-bottom: 64px;
+}
+
+.addon-title-row {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 28px;
+}
+
+.addon-title-row h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -.035em;
+}
+
+.addon-title-row p,
+.addon-section-heading p,
+.addon-recent header p {
+  margin: 6px 0 0;
+  color: var(--muted-foreground);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.addon-connection,
+.addon-attention {
+  padding: 15px 17px;
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.addon-connection > span,
+.addon-attention > span {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  background: #edf7f1;
+  color: var(--green);
+  font-size: 14px;
+}
+
+.addon-connection > div,
+.addon-attention > div {
+  min-width: 0;
+  flex: 1;
+}
+
+.addon-connection strong,
+.addon-connection small,
+.addon-attention strong,
+.addon-attention small {
+  display: block;
+}
+
+.addon-connection strong,
+.addon-attention strong {
+  font-size: 13px;
+}
+
+.addon-connection small,
+.addon-attention small {
+  margin-top: 3px;
+  color: #777;
+  font-size: 11px;
+}
+
+.addon-attention {
+  margin-top: 10px;
+  border-color: #e4e4e4;
+  background: #fafafa;
+}
+
+.addon-attention > span {
+  background: #eeeeee;
+  color: #333;
+}
+
+.addon-section-heading {
+  margin: 34px 0 14px;
+}
+
+.addon-section-heading h2,
+.addon-recent h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.addon-agent-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.addon-agent {
+  min-height: 126px;
+  padding: 17px;
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) 18px;
+  align-items: start;
+  gap: 13px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--foreground);
+  text-align: left;
+  transition: border-color .16s ease, background .16s ease;
+}
+
+.addon-agent:hover {
+  border-color: #cdcdcd;
+  background: #fcfcfc;
+}
+
+.addon-agent-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 1px solid #e3e3e3;
+  border-radius: 9px;
+  background: #f7f7f7;
+  font-size: 15px;
+}
+
+.addon-agent-copy > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.addon-agent-copy strong {
+  font-size: 14px;
+}
+
+.addon-agent-copy p {
+  margin: 8px 0 10px;
+  color: #777;
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.addon-agent-copy > small {
+  color: #999;
+  font-size: 10px;
+}
+
+.addon-agent > i {
+  align-self: center;
+  color: #aaa;
+  font-size: 11px;
+}
+
+.addon-agent:hover > i {
+  color: #333;
+}
+
+.addon-recent {
+  margin-top: 34px;
+  padding: 19px 21px 5px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.addon-recent > header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+@media (max-width: 760px) {
+  .addon-agent-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .addon-title-row {
+    flex-direction: column;
+  }
+
+  .addon-attention {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .addon-attention button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 520px) {
+  .ai-addon-home {
+    padding-top: 22px;
+  }
+
+  .addon-connection {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+
+  .addon-connection .badge {
+    margin-left: 47px;
+  }
+}
+
 /* Brand Police uses Brandy's product canvas, not a second application shell. */
 :root {
   --background: #ffffff;
