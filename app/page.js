@@ -1,310 +1,230 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import {
-  Activity,
-  AlertCircle,
-  Archive,
-  BarChart3,
-  Bell,
-  Check,
-  CheckCircle2,
-  ChevronDown,
-  ExternalLink,
-  FileImage,
-  Filter,
-  Fingerprint,
-  Globe2,
-  Grid2X2,
-  HelpCircle,
-  Image as ImageIcon,
-  LoaderCircle,
-  Menu,
-  MoreHorizontal,
-  RefreshCw,
-  Search,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  X,
-} from "lucide-react";
 import { brandPoliceService } from "../lib/brand-police-service";
 
-const tabs = [
-  { id: "all", label: "All" },
-  { id: "new", label: "New" },
-  { id: "reviewed", label: "Reviewed" },
-  { id: "approved", label: "Approved" },
-  { id: "dismissed", label: "Dismissed" },
-];
-
 const navigation = [
-  { label: "Overview", icon: Grid2X2 },
-  { label: "Brand Police", icon: ShieldCheck, active: true },
-  { label: "Assets", icon: ImageIcon },
-  { label: "Guidelines", icon: Archive },
-  { label: "Analytics", icon: BarChart3 },
+  ["Overview", "overview"],
+  ["Findings", "findings", 3],
+  ["Scans", "scans"],
+  ["Brand data", "brand-data"],
+  ["Assets", "assets"],
+  ["Domains", "domains"],
+  ["Rules", "rules"],
+  ["Reports", "reports"],
 ];
 
-function Logo() {
-  return (
-    <div className="brand-logo" aria-label="Brandy">
-      <span className="brand-mark"><span /></span>
-      <span>Brandy</span>
+const agents = [
+  { id:"architect", step:"01", name:"Brand Architect", role:"Build", icon:"bi-compass", description:"Detect and organise the brand elements already available across your website and Brand Space.", status:"Ready", metric:"12 elements detected" },
+  { id:"coach", step:"02", name:"Brand Coach", role:"Improve", icon:"bi-lightbulb", description:"Review structure, clarity and completeness, then turn gaps into focused recommendations.", status:"3 suggestions", metric:"82% space quality" },
+  { id:"cbo", step:"03", name:"Chief Brand Officer", role:"Govern", icon:"bi-person-badge", description:"Track important changes, review decisions and keep brand governance visible across the team.", status:"2 reviews", metric:"4 changes this week" },
+  { id:"police", step:"04", name:"Brand Police", role:"Monitor", icon:"bi-shield-check", description:"Find incorrect or unauthorised brand usage and move every issue through resolution.", status:"3 findings", metric:"84% brand health" },
+  { id:"support", step:"05", name:"Brandy Support Agent", role:"Help", icon:"bi-chat-square-text", description:"Answer product questions using the user’s current Brand Space and Brandy help context.", status:"Online", metric:"Usually replies instantly" },
+];
+
+const domainsSeed = [
+  { domain:"brandyhq.com", type:"Owned", status:"Monitoring", frequency:"Daily", pages:148, findings:0, score:100 },
+  { domain:"seahawkmedia.com", type:"Approved partner", status:"Monitoring", frequency:"Weekly", pages:42, findings:1, score:96 },
+  { domain:"brandfetch.com", type:"Unknown", status:"Monitoring", frequency:"Weekly", pages:18, findings:1, score:71 },
+  { domain:"saasframe.io", type:"Unknown", status:"Monitoring", frequency:"Weekly", pages:9, findings:1, score:68 },
+];
+
+const rulesSeed = [
+  { id:1, title:"Current logo only", description:"Flag retired or unapproved logo versions", category:"Logo", severity:"High", source:"Logo usage / Primary logo", synced:"12 min ago", enabled:true },
+  { id:2, title:"Protect logo proportions", description:"Detect stretched, compressed, cropped, or rotated logos", category:"Logo", severity:"High", source:"Logo usage / Do not alter", synced:"12 min ago", enabled:true },
+  { id:3, title:"Approved brand colors", description:"Flag recolored marks outside approved variants", category:"Color", severity:"Medium", source:"Brand colors / Core palette", synced:"12 min ago", enabled:true },
+  { id:4, title:"Minimum clear space", description:"Check spacing around the primary logo and symbol", category:"Layout", severity:"Medium", source:"Logo usage / Clear space", synced:"12 min ago", enabled:true },
+  { id:5, title:"Minimum asset resolution", description:"Flag blurry assets below 240 px wide", category:"Quality", severity:"Low", source:"Digital usage / Quality", synced:"Yesterday", enabled:false },
+  { id:6, title:"Approved terminology", description:"Detect prohibited product names and retired messaging", category:"Voice", severity:"Medium", source:"Voice / Product naming", synced:"Yesterday", enabled:false },
+];
+
+const assetsSeed = [
+  { name:"Primary logo", type:"Logo", status:"Active", matches:47, domains:9, updated:"Aug 8", source:"Logos / Primary", tone:"orange", monitored:true },
+  { name:"Symbol mark", type:"Logo", status:"Active", matches:28, domains:6, updated:"Aug 8", source:"Logos / Symbols", tone:"black", monitored:true },
+  { name:"Wordmark", type:"Logo", status:"Active", matches:16, domains:4, updated:"Jul 28", source:"Logos / Wordmarks", tone:"white", monitored:true },
+  { name:"App icon", type:"Icon", status:"Active", matches:12, domains:3, updated:"Jul 21", source:"Digital / Icons", tone:"peach", monitored:true },
+  { name:"2024 horizontal logo", type:"Logo", status:"Retired", matches:4, domains:2, updated:"Retired Aug 1", source:"Archive / Retired logos", tone:"gray", monitored:true },
+  { name:"Campaign key visual", type:"Image", status:"Archived", matches:0, domains:0, updated:"Archived Jul 12", source:"Campaigns / Summer 2026", tone:"gradient", monitored:false },
+];
+
+const brandSources = [
+  {name:"Assets", value:"126", detail:"5 monitored, 1 retired match", icon:"bi-images", status:"Synced"},
+  {name:"Colours", value:"18", detail:"6 core and 12 supporting colours", icon:"bi-palette", status:"Synced"},
+  {name:"Fonts", value:"4", detail:"2 families and 4 approved weights", icon:"bi-fonts", status:"Synced"},
+  {name:"Guideline rules", value:"24", detail:"6 active automated checks", icon:"bi-journal-check", status:"Synced"},
+];
+
+const scansSeed = [
+  { id:"SC-018", target:"brandyhq.com", type:"Scheduled", status:"Completed", pages:148, new:0, changed:0, resolved:1, date:"Today, 9:30 AM", duration:"2m 18s" },
+  { id:"SC-017", target:"Partner domains", type:"Scheduled", status:"Completed", pages:69, new:3, changed:1, resolved:0, date:"Today, 6:00 AM", duration:"4m 02s" },
+  { id:"SC-016", target:"brandfetch.com", type:"Manual", status:"Completed", pages:18, new:1, changed:0, resolved:0, date:"Aug 10, 4:22 PM", duration:"42s" },
+  { id:"SC-015", target:"saasframe.io", type:"Manual", status:"Completed", pages:9, new:1, changed:2, resolved:0, date:"Aug 10, 12:10 PM", duration:"31s" },
+  { id:"SC-014", target:"All monitored domains", type:"Scheduled", status:"Completed", pages:217, new:2, changed:0, resolved:3, date:"Aug 9, 6:00 AM", duration:"6m 44s" },
+];
+
+function Badge({children,tone="gray"}){ return <span className={`badge ${tone}`}>{children}</span>; }
+function Severity({value}){ return <span className={`severity ${value}`}><i/>{value}</span>; }
+function Status({status}){ const map={new:["Needs review","amber"],reviewing:["Reviewing","blue"],approved:["Approved","green"],dismissed:["Dismissed","gray"],resolved:["Resolved","purple"]}; const item=map[status]||[status,"gray"]; return <Badge tone={item[1]}>{item[0]}</Badge>; }
+
+function ProductRail(){
+  return <aside className="product-rail" aria-label="Brandy product navigation">
+    <div className="rail-top">
+      <button className="brand-switcher" title="Change brand"><span>B</span><i className="bi bi-chevron-down"/></button>
+      <button title="Collections"><i className="bi bi-collection"/></button>
+      <button title="Brand checklist"><i className="bi bi-check2-square"/></button>
+      <button title="Insights"><i className="bi bi-bar-chart"/></button>
+      <button className="active" title="Brand Consciousness AI"><i className="bi bi-stars"/><b>3</b></button>
     </div>
-  );
-}
-
-function Sidebar({ open, onClose }) {
-  return (
-    <>
-      {open && <button className="sidebar-scrim" onClick={onClose} aria-label="Close navigation" />}
-      <aside className={`sidebar ${open ? "sidebar-open" : ""}`}>
-        <div className="sidebar-top">
-          <Logo />
-          <button className="icon-button mobile-close" onClick={onClose} aria-label="Close navigation"><X size={18} /></button>
-        </div>
-
-        <button className="space-switcher">
-          <span className="space-avatar">B</span>
-          <span><strong>Brandy</strong><small>Brand Space</small></span>
-          <ChevronDown size={15} />
-        </button>
-
-        <nav aria-label="Primary navigation">
-          <p className="nav-label">Workspace</p>
-          {navigation.map(({ label, icon: Icon, active }) => (
-            <button key={label} className={`nav-item ${active ? "active" : ""}`}>
-              <Icon size={17} strokeWidth={1.8} />
-              <span>{label}</span>
-              {label === "Brand Police" && <span className="new-count">7</span>}
-            </button>
-          ))}
-        </nav>
-
-        <div className="sidebar-bottom">
-          <button className="nav-item"><HelpCircle size={17} /><span>Help & support</span></button>
-          <button className="nav-item"><Settings size={17} /><span>Settings</span></button>
-          <div className="account">
-            <span className="account-avatar">AK</span>
-            <span><strong>Akshay Kumar</strong><small>Workspace admin</small></span>
-            <MoreHorizontal size={16} />
-          </div>
-        </div>
-      </aside>
-    </>
-  );
-}
-
-function StatCard({ icon: Icon, label, value, note, tone }) {
-  return (
-    <div className="stat-card">
-      <div className={`stat-icon ${tone}`}><Icon size={18} /></div>
-      <div><span>{label}</span><strong>{value}</strong><small>{note}</small></div>
+    <div className="rail-bottom">
+      <button title="Search"><i className="bi bi-search"/></button>
+      <button title="Settings"><i className="bi bi-gear"/></button>
+      <button className="avatar" title="Akshay Kumar">AK</button>
     </div>
-  );
+  </aside>;
 }
 
-function FindingArtwork({ tone, domain }) {
-  return (
-    <div className={`finding-artwork ${tone}`}>
-      <span className="mini-mark"><span /></span>
-      <small>{domain.split(".")[0]}</small>
+function Header({agent,active,onNavigate,onBack}){
+  const current=agents.find(item=>item.id===agent);
+  return <><header className="page-header"><div className="feature-title">{agent!=="hub"&&<button className="agent-back" onClick={onBack} title="All agents"><i className="bi bi-arrow-left"/></button>}<strong>{current?.name||"Brand Consciousness AI"}</strong><Badge tone="soft">Beta</Badge></div><div className="header-actions"><button className="icon-button" title="Notifications"><i className="bi bi-bell"/><b/></button>{agent==="police"&&<button className={`icon-button ${active==="settings"?"active":""}`} title="Settings" onClick={()=>onNavigate("settings")}><i className="bi bi-gear"/></button>}{agent==="police"&&active!=="scans"&&<button className="primary" onClick={()=>onNavigate("scans")}><i className="bi bi-plus"/>New scan</button>}</div></header>{agent==="police"&&<nav className="feature-tabs" aria-label="Brand Police sections">{navigation.map(([label,id,count])=><button key={id} className={active===id?"active":""} onClick={()=>onNavigate(id)}><span>{label}</span>{count?<b>{count}</b>:null}</button>)}</nav>}</>;
+}
+
+function PageTitle({title,description,children}){ return <div className="title-row"><div><h1>{title}</h1><p>{description}</p></div>{children}</div>; }
+function Metric({label,value,change,icon,tone,onClick}){ return <button className="metric" onClick={onClick}><span className={`metric-icon ${tone}`}><i className={`bi ${icon}`}/></span><small>{label}</small><strong>{value}</strong><em>{change}</em></button>; }
+function SourceCell({finding}){ return <div className="source-cell"><span className={`source-thumb ${finding.tone}`}>b</span><span><strong>{finding.page}</strong><small>{finding.domain} · {finding.id}</small></span></div>; }
+
+function TrendChart(){ return <div className="trend-chart"><div className="chart-labels"><span>100</span><span>75</span><span>50</span></div><div className="chart-grid"><i/><i/><i/><svg viewBox="0 0 700 150" preserveAspectRatio="none"><defs><linearGradient id="score-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#424242" stopOpacity=".12"/><stop offset="1" stopColor="#424242" stopOpacity="0"/></linearGradient></defs><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26 L700,150 L0,150 Z" fill="url(#score-fill)"/><path d="M0,118 C75,112 92,92 155,99 S250,86 310,76 S410,83 470,54 S580,61 700,26" fill="none" stroke="#424242" strokeWidth="2"/></svg></div><div className="chart-days"><span>Aug 5</span><span>Aug 6</span><span>Aug 7</span><span>Aug 8</span><span>Aug 9</span><span>Aug 10</span><span>Today</span></div></div>; }
+
+function AgentHub({onSelect}){
+  const [selectedAgent,setSelectedAgent]=useState("police");
+  const selected=agents.find(item=>item.id===selectedAgent);
+  const agentContent={
+    architect:{eyebrow:"Brand foundation",title:"12 brand elements are ready to review",text:"Brand Architect found three logo variants, six colours, two font families and one voice sample from your existing brand sources.",action:"Review detected elements",facts:[["12","Detected"],["4","Categories"],["Today","Last analysis"]]},
+    coach:{eyebrow:"Brand quality",title:"Three improvements can strengthen this Brand Space",text:"Your visual identity is well covered. Logo misuse guidance, typography hierarchy and partner asset rules still need attention.",action:"Review recommendations",facts:[["82%","Space quality"],["3","Suggestions"],["2","Coverage gaps"]]},
+    cbo:{eyebrow:"Brand governance",title:"Two changes need acknowledgement",text:"The primary logo and core purple were updated. Review their impact and keep the decision history current.",action:"Review changes",facts:[["4","Changes this week"],["2","Need review"],["91%","Governance health"]]},
+    police:{eyebrow:"External monitoring",title:"Three brand uses need your review",text:"An old logo, an altered mark and one colour mismatch were detected across monitored partner websites.",action:"Review findings",facts:[["84%","Brand health"],["217","Pages checked"],["3","Open findings"]]},
+    support:{eyebrow:"Brandy help",title:"Ask about this Brand Space or any Brandy feature",text:"Support already knows the current Brand Space, recent activity and open findings, so you do not need to explain the context again.",action:"Ask Brandy Support",facts:[["Online","Status"],["172","Items indexed"],["Instant","Typical reply"]]}
+  }[selectedAgent];
+  return <div className="page-content ai-hub ai-workbench">
+    <div className="workbench-title"><div><h1>Brandy AI</h1><p>AI assistance for the Brand Space you are already working in.</p></div><div className="workbench-sync"><span><i/>Brand Space synced</span><button className="icon-button" title="Sync now"><i className="bi bi-arrow-repeat"/></button></div></div>
+
+    <nav className="agent-mode-switcher" aria-label="Choose AI agent">{agents.map(agent=><button key={agent.id} className={selectedAgent===agent.id?"active":""} onClick={()=>setSelectedAgent(agent.id)}><i className={`bi ${agent.icon}`}/><span>{agent.name.replace("Brandy ","")}</span>{agent.id==="police"&&<b>3</b>}</button>)}</nav>
+
+    <section className="agent-focus-panel">
+      <div className="agent-focus-main"><div className="focus-label"><span><i className={`bi ${selected.icon}`}/></span><small>{agentContent.eyebrow}</small></div><h2>{agentContent.title}</h2><p>{agentContent.text}</p><button className="primary" onClick={()=>onSelect(selectedAgent)}>{agentContent.action}<i className="bi bi-arrow-right"/></button></div>
+      <div className="agent-focus-facts">{agentContent.facts.map(([value,label])=><span key={label}><strong>{value}</strong><small>{label}</small></span>)}</div>
+    </section>
+
+    <div className="workbench-lower">
+      <section className="workbench-context"><header><div><h2>Using this Brand Space</h2><p>Shared context available to every agent</p></div><Badge tone="green">Connected</Badge></header><div className="context-source-grid">{[["bi-images","Assets","126"],["bi-palette","Colours","18"],["bi-fonts","Fonts","4"],["bi-journal-check","Guideline rules","24"]].map(([icon,label,value])=><div key={label}><span><i className={`bi ${icon}`}/></span><p><strong>{value}</strong><small>{label}</small></p></div>)}</div><footer>Last synced 12 minutes ago <button>View brand data</button></footer></section>
+      <section className="workbench-activity"><header><div><h2>Recent activity</h2><p>Across all agents</p></div><button className="text-button">View all</button></header><div className="signal-list"><article><span className="signal-time">18m</span><i className="bi bi-compass"/><p><strong>New colour detected</strong><small>Sent to Brand Coach for review</small></p></article><article><span className="signal-time">1h</span><i className="bi bi-shield-check"/><p><strong>Monitoring completed</strong><small>Four domains checked</small></p></article><article><span className="signal-time">3h</span><i className="bi bi-person-badge"/><p><strong>Logo retirement recorded</strong><small>Decision history updated</small></p></article></div></section>
     </div>
-  );
+  </div>;
 }
 
-function StatusPill({ status }) {
-  const labels = { new: "New", reviewed: "Reviewed", approved: "Approved", dismissed: "Dismissed" };
-  return <span className={`status-pill ${status}`}><span />{labels[status]}</span>;
+function AgentIntro({agent,title,description,children}){
+  return <div className="agent-intro"><div><span className="agent-intro-icon"><i className={`bi ${agent.icon}`}/></span><small>{agent.role.toUpperCase()}</small><h1>{title}</h1><p>{description}</p></div>{children}</div>;
 }
 
-function FindingCard({ finding, busy, onStatusChange }) {
-  return (
-    <article className="finding-card">
-      <FindingArtwork tone={finding.tone} domain={finding.domain} />
-      <div className="finding-body">
-        <div className="finding-heading">
-          <div>
-            <div className="domain-line"><Globe2 size={13} />{finding.domain}<StatusPill status={finding.status} /></div>
-            <h3>{finding.pageTitle}</h3>
-          </div>
-          <a href={finding.sourceUrl} target="_blank" rel="noreferrer" className="icon-button" aria-label={`Open ${finding.domain}`}>
-            <ExternalLink size={16} />
-          </a>
-        </div>
-        <div className="finding-details">
-          <span><FileImage size={14} />{finding.matchedAsset}</span>
-          <span><Fingerprint size={14} />{finding.matchType}</span>
-          <span><Activity size={14} />{finding.discoveredAt}</span>
-        </div>
-        <div className="finding-footer">
-          <span className="source-label">Found on {finding.source}</span>
-          <div className="finding-actions">
-            {finding.status !== "approved" && (
-              <button disabled={busy} className="secondary-button success" onClick={() => onStatusChange(finding.id, "approved")}>
-                <Check size={15} />Approve
-              </button>
-            )}
-            {finding.status !== "dismissed" && (
-              <button disabled={busy} className="secondary-button" onClick={() => onStatusChange(finding.id, "dismissed")}>
-                <X size={15} />Dismiss
-              </button>
-            )}
-            {(finding.status === "approved" || finding.status === "dismissed") && (
-              <button disabled={busy} className="secondary-button" onClick={() => onStatusChange(finding.id, "reviewed")}>
-                Mark reviewed
-              </button>
-            )}
-          </div>
-        </div>
-      </div>
-    </article>
-  );
+function BrandArchitect(){
+  const [url,setUrl]=useState("https://brandyhq.com"); const [running,setRunning]=useState(false); const [complete,setComplete]=useState(true); const [selected,setSelected]=useState(["Logos","Colours","Typography","Voice"]);
+  const run=()=>{setRunning(true);setComplete(false);window.setTimeout(()=>{setRunning(false);setComplete(true);},1200);}; const toggle=item=>setSelected(x=>x.includes(item)?x.filter(v=>v!==item):[...x,item]);
+  return <div className="page-content agent-workspace"><AgentIntro agent={agents[0]} title="Build your brand foundation" description="Detect brand elements from your website, compare them with Brandy and organise the starting structure of your Brand Space."><div className="agent-score"><strong>12</strong><small>elements detected</small></div></AgentIntro>
+    <section className="architect-scan panel"><div><h2>Import from your website</h2><p>Brand Architect will inspect the public site and propose brand elements. Nothing is added without review.</p></div><label><i className="bi bi-globe2"/><input value={url} onChange={e=>setUrl(e.target.value)}/><button className="primary" disabled={running||url.length<9} onClick={run}><i className={`bi ${running?"bi-arrow-repeat spinning":"bi-stars"}`}/>{running?"Analysing":"Analyse website"}</button></label></section>
+    {complete&&<><div className="agent-metrics"><span><strong>3</strong><small>Logo variants</small></span><span><strong>6</strong><small>Brand colours</small></span><span><strong>2</strong><small>Font families</small></span><span><strong>1</strong><small>Voice sample</small></span></div><div className="architect-grid"><section className="panel detected-elements"><div className="panel-heading"><div><h2>Detected brand elements</h2><p>Select what should be reviewed for your Brand Space</p></div><Badge tone="green">Analysis complete</Badge></div>{["Logos","Colours","Typography","Voice"].map((item,index)=><button className={selected.includes(item)?"selected":""} key={item} onClick={()=>toggle(item)}><span className={`element-preview p${index+1}`}><i className={`bi ${["bi-image","bi-palette","bi-fonts","bi-chat-quote"][index]}`}/></span><span><strong>{item}</strong><small>{["3 variants detected","6 values detected","DM Sans and Instrument Serif","Confident, clear and helpful"][index]}</small></span><i className={`bi ${selected.includes(item)?"bi-check-circle-fill":"bi-circle"}`}/></button>)}</section><section className="panel structure-preview"><div className="panel-heading"><div><h2>Suggested structure</h2><p>Based on the detected content</p></div></div><div className="collection-tree"><span><i className="bi bi-chevron-down"/><strong>Brand foundations</strong></span><span><i className="bi bi-folder"/>Logo system <Badge tone="gray">3</Badge></span><span><i className="bi bi-folder"/>Colour palette <Badge tone="gray">6</Badge></span><span><i className="bi bi-folder"/>Typography <Badge tone="gray">2</Badge></span><span><i className="bi bi-folder"/>Voice and messaging <Badge tone="gray">1</Badge></span></div><footer><button className="primary" disabled={!selected.length}>Add {selected.length} sections to Brand Space</button></footer></section></div></>}
+  </div>;
 }
 
-function Toast({ message, tone = "success", onClose }) {
-  return (
-    <div className={`toast ${tone}`} role="status">
-      {tone === "success" ? <CheckCircle2 size={18} /> : <AlertCircle size={18} />}
-      <span>{message}</span>
-      <button onClick={onClose} aria-label="Dismiss notification"><X size={15} /></button>
-    </div>
-  );
+function BrandCoach(){
+  const seed=[{id:1,title:"Add logo misuse examples",detail:"Your logo collection explains approved versions but does not show what to avoid.",impact:"High impact",section:"Logo system"},{id:2,title:"Define typography hierarchy",detail:"Heading and body fonts exist, but approved sizes and weights are incomplete.",impact:"Medium impact",section:"Typography"},{id:3,title:"Clarify partner asset usage",detail:"Partners can download assets, but permitted channels and expiry rules are not documented.",impact:"Medium impact",section:"Asset usage"}];
+  const [items,setItems]=useState(seed); const act=(id,status)=>setItems(x=>x.map(v=>v.id===id?{...v,status}:v));
+  return <div className="page-content agent-workspace"><AgentIntro agent={agents[1]} title="Improve your Brand Space" description="Get focused recommendations based on what is already inside Brandy, without rewriting your brand for you."><div className="quality-ring"><strong>82</strong><small>Space quality</small></div></AgentIntro><div className="coach-summary"><span><strong>3</strong><small>Suggestions</small></span><span><strong>2</strong><small>Coverage gaps</small></span><span><strong>Good</strong><small>Asset organisation</small></span><span><strong>Today</strong><small>Last review</small></span></div><div className="coach-layout"><section className="panel recommendation-list"><div className="panel-heading"><div><h2>Recommended improvements</h2><p>Prioritised by likely impact</p></div><select><option>All recommendations</option><option>High impact</option></select></div>{items.map(item=><article key={item.id} className={item.status?"handled":""}><span className="recommendation-number">{String(item.id).padStart(2,"0")}</span><div><div><Badge tone={item.impact.startsWith("High")?"amber":"gray"}>{item.impact}</Badge><small>{item.section}</small></div><h3>{item.title}</h3><p>{item.detail}</p>{item.status?<em><i className="bi bi-check2"/>{item.status}</em>:<footer><button className="primary" onClick={()=>act(item.id,"Added to tasks")}>Add to tasks</button><button className="secondary" onClick={()=>act(item.id,"Dismissed")}>Dismiss</button><button className="text-button">Open section <i className="bi bi-arrow-up-right"/></button></footer>}</div></article>)}</section><aside className="panel coach-coverage"><div className="panel-heading"><div><h2>Brand coverage</h2><p>What your space communicates</p></div></div>{[["Visual identity",92],["Asset usage",68],["Voice and tone",76],["Brand foundations",88]].map(([label,value])=><div className="coverage-row" key={label}><span><strong>{label}</strong><small>{value}%</small></span><div><i style={{width:`${value}%`}}/></div></div>)}<button className="secondary full">Run full review</button></aside></div></div>;
 }
 
-export default function BrandPolicePage() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [findings, setFindings] = useState([]);
-  const [activeTab, setActiveTab] = useState("all");
-  const [query, setQuery] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [scanning, setScanning] = useState(false);
-  const [busyId, setBusyId] = useState(null);
-  const [toast, setToast] = useState(null);
+function ChiefBrandOfficer(){
+  const [reviews,setReviews]=useState([{id:1,title:"Primary logo replaced",person:"Himanshi",section:"Logo system",time:"38 min ago",status:"review"},{id:2,title:"Core purple updated",person:"Akshay Kumar",section:"Colour palette",time:"2 hr ago",status:"review"},{id:3,title:"Partner guidelines published",person:"Akshay Kumar",section:"Usage",time:"Yesterday",status:"logged"}]); const resolve=id=>setReviews(x=>x.map(v=>v.id===id?{...v,status:"approved"}:v));
+  return <div className="page-content agent-workspace"><AgentIntro agent={agents[2]} title="Govern how your brand evolves" description="See meaningful changes, understand their impact and maintain a decision record across your Brand Space."><button className="primary"><i className="bi bi-file-earmark-text"/>Generate weekly brief</button></AgentIntro><div className="cbo-metrics"><Metric label="Changes this week" value="4" change="Across 3 collections" icon="bi-arrow-repeat" tone="gray"/><Metric label="Needs review" value={reviews.filter(x=>x.status==="review").length} change="1 high impact" icon="bi-eye" tone="amber"/><Metric label="Decisions logged" value="18" change="Last 30 days" icon="bi-journal-check" tone="green"/><Metric label="Governance health" value="91%" change="Up 4 points" icon="bi-shield-check" tone="blue"/></div><div className="cbo-layout"><section className="panel change-reviews"><div className="panel-heading"><div><h2>Changes needing attention</h2><p>Important edits identified by the Chief Brand Officer</p></div><button className="text-button">View changelog</button></div>{reviews.map(item=><article key={item.id}><span className={`change-avatar ${item.status}`}><i className={`bi ${item.status==="approved"?"bi-check2":"bi-arrow-left-right"}`}/></span><div><strong>{item.title}</strong><small>{item.section} · {item.person} · {item.time}</small></div>{item.status==="review"?<div><button className="secondary">Review change</button><button className="primary" onClick={()=>resolve(item.id)}>Acknowledge</button></div>:<Badge tone={item.status==="approved"?"green":"gray"}>{item.status==="approved"?"Acknowledged":"Logged"}</Badge>}</article>)}</section><aside className="panel daily-brief"><div className="brief-label"><i className="bi bi-stars"/>AI BRIEF</div><h2>Your brand is stable, with two changes worth reviewing.</h2><p>The new primary logo is correctly reflected in Brandy. Brand Police found four external uses of the retired version, while the updated purple remains within the existing visual system.</p><ul><li><i className="bi bi-check2"/>No permission risks detected</li><li><i className="bi bi-exclamation-circle"/>2 decisions need acknowledgement</li><li><i className="bi bi-shield-check"/>Monitoring re-check completed</li></ul><button className="secondary full">Open complete brief</button></aside></div></div>;
+}
 
-  useEffect(() => {
-    brandPoliceService.listFindings()
-      .then(({ findings: loaded }) => setFindings(loaded))
-      .catch(() => setToast({ tone: "error", message: "Findings could not be loaded." }))
-      .finally(() => setLoading(false));
-  }, []);
+function SupportAgent(){
+  const initial=[{from:"agent",text:"Hi Akshay. I can help with this Brand Space, explain Brandy features, or guide you through a task. What do you need?"}]; const [messages,setMessages]=useState(initial); const [input,setInput]=useState(""); const send=text=>{const value=(text||input).trim();if(!value)return;setMessages(x=>[...x,{from:"user",text:value},{from:"agent",text:"Based on this Brand Space, the best next step is to open the Logo system collection, confirm the current primary asset, and then let Brand Police re-check the retired version across monitored domains."}]);setInput("");};
+  return <div className="page-content agent-workspace support-workspace"><AgentIntro agent={agents[4]} title="Get help in context" description="Ask about Brandy or the active Brand Space. Support answers with the product and brand context already available."><div className="online-status"><i/>Online</div></AgentIntro><div className="support-layout"><aside className="panel support-context"><div className="panel-heading"><div><h2>Current context</h2><p>What Support can use</p></div></div>{[["bi-grid","Brandy Brand Space","172 items indexed"],["bi-shield-check","Brand Police","3 open findings"],["bi-clock-history","Recent activity","4 changes this week"],["bi-book","Help centre","Product guidance"]].map(([icon,title,detail])=><div className="context-row" key={title}><span><i className={`bi ${icon}`}/></span><div><strong>{title}</strong><small>{detail}</small></div><i className="bi bi-check2"/></div>)}</aside><section className="panel support-chat"><header><span className="support-avatar"><i className="bi bi-chat-square-text"/></span><div><strong>Brandy Support Agent</strong><small><i/>Using this Brand Space as context</small></div><button className="icon-button"><i className="bi bi-three-dots"/></button></header><div className="chat-body">{messages.map((message,index)=><div className={`message ${message.from}`} key={index}>{message.from==="agent"&&<span className="support-avatar"><i className="bi bi-stars"/></span>}<p>{message.text}</p></div>)}{messages.length===1&&<div className="prompt-chips"><button onClick={()=>send("How do I replace a retired logo?")}>Replace a retired logo</button><button onClick={()=>send("Why is my Brand Space score 82%?")}>Explain my Coach score</button><button onClick={()=>send("How do I invite an external partner?")}>Invite a partner</button></div>}</div><footer><label><input value={input} onChange={e=>setInput(e.target.value)} onKeyDown={e=>{if(e.key==="Enter")send();}} placeholder="Ask Brandy Support"/><button onClick={()=>send()} disabled={!input.trim()}><i className="bi bi-arrow-up"/></button></label><small>Demo responses use sample Brand Space context.</small></footer></section></div></div>;
+}
 
-  const counts = useMemo(() => findings.reduce((result, finding) => {
-    result[finding.status] = (result[finding.status] || 0) + 1;
-    return result;
-  }, {}), [findings]);
+function Overview({findings,onNavigate,onOpen}){
+  const urgent=findings.filter(x=>x.status==="new").slice(0,3);
+  return <div className="page-content"><PageTitle title="Brand Police" description="Find incorrect or unauthorised brand usage, review the evidence, and resolve it."><div className="scan-meta"><span className="live-dot"/><span><small>Monitoring active</small><strong>Last checked 12 minutes ago</strong></span></div></PageTitle>
+    <section className="monitoring-summary panel"><div className="monitoring-copy"><span className="monitoring-icon"><i className="bi bi-shield-check"/></span><div><Badge tone="green">Monitoring active</Badge><h2>Your brand is being monitored</h2><p>Brand Police checks 4 domains and 5 approved assets. Three new findings need review.</p></div></div><div className="monitoring-facts"><span><strong>84%</strong><small>Brand health</small></span><span><strong>217</strong><small>Pages checked</small></span><span><strong>{findings.filter(x=>x.status==="new").length}</strong><small>Needs review</small></span></div><button className="primary" onClick={()=>onNavigate("findings")}>Review findings</button></section>
+    <div className="overview-grid native-overview"><section className="panel urgent-panel"><div className="panel-heading"><div><h2>Needs your attention</h2><p>New findings ordered by severity</p></div><button className="text-button" onClick={()=>onNavigate("findings")}>View all <i className="bi bi-arrow-right"/></button></div><div className="table-scroll"><table><thead><tr><th>Finding</th><th>Issue</th><th>Severity</th><th>Last seen</th><th/></tr></thead><tbody>{urgent.map(f=><tr key={f.id} onClick={()=>onOpen(f)}><td><SourceCell finding={f}/></td><td>{f.issue}</td><td><Severity value={f.severity}/></td><td className="muted">{f.lastSeen}</td><td><i className="bi bi-chevron-right muted"/></td></tr>)}</tbody></table></div></section><section className="panel activity-panel"><div className="panel-heading"><div><h2>Recent activity</h2><p>Latest changes</p></div></div><div className="activity-list"><div><span className="activity-icon red"><i className="bi bi-flag"/></span><p><strong>High severity finding detected</strong><small>brandfetch.com · 12 min ago</small></p></div><div><span className="activity-icon green"><i className="bi bi-check2"/></span><p><strong>Violation marked resolved</strong><small>designmodo.com · Yesterday</small></p></div><div><span className="activity-icon gray"><i className="bi bi-radar"/></span><p><strong>Scheduled scan completed</strong><small>248 pages checked · Aug 9</small></p></div></div></section></div>
+    <section className="quick-actions"><button onClick={()=>onNavigate("scans")}><i className="bi bi-search"/><span><strong>Scan a website</strong><small>Check a domain, sitemap, or URL</small></span><i className="bi bi-arrow-right"/></button><button onClick={()=>onNavigate("brand-data")}><i className="bi bi-arrow-repeat"/><span><strong>Review synced brand data</strong><small>Assets, colours, fonts and guidelines</small></span><i className="bi bi-arrow-right"/></button><button onClick={()=>onNavigate("assets")}><i className="bi bi-images"/><span><strong>See where assets are used</strong><small>Track active, archived and retired files</small></span><i className="bi bi-arrow-right"/></button></section>
+  </div>;
+}
 
-  const filteredFindings = useMemo(() => findings.filter((finding) => {
-    const matchesTab = activeTab === "all" || finding.status === activeTab;
-    const searchable = `${finding.domain} ${finding.pageTitle} ${finding.matchedAsset}`.toLowerCase();
-    return matchesTab && searchable.includes(query.toLowerCase().trim());
-  }), [findings, activeTab, query]);
+function Findings({findings,onOpen,onUpdate}){
+  const [query,setQuery]=useState(""); const [status,setStatus]=useState("all"); const [severity,setSeverity]=useState("all"); const [selected,setSelected]=useState([]);
+  const filtered=useMemo(()=>findings.filter(f=>(status==="all"||f.status===status)&&(severity==="all"||f.severity===severity)&&`${f.page} ${f.domain} ${f.asset} ${f.issue}`.toLowerCase().includes(query.toLowerCase())),[findings,query,status,severity]);
+  const toggle=id=>setSelected(x=>x.includes(id)?x.filter(v=>v!==id):[...x,id]);
+  const bulk=statusValue=>{selected.forEach(id=>onUpdate(id,{status:statusValue}));setSelected([]);};
+  return <div className="page-content"><PageTitle title="Findings" description="Review detected brand usage and move every issue to resolution."><button className="secondary"><i className="bi bi-download"/>Export</button></PageTitle>
+    <div className="saved-views"><button className="active">All findings <b>{findings.length}</b></button><button>Needs review <b>{findings.filter(x=>x.status==="new").length}</b></button><button>Assigned to me <b>2</b></button><button>High severity <b>2</b></button><button><i className="bi bi-plus"/>Save view</button></div>
+    <section className="panel findings-panel"><div className="toolbar"><label className="search"><i className="bi bi-search"/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search findings, domains or assets"/></label><select value={status} onChange={e=>setStatus(e.target.value)}><option value="all">All statuses</option><option value="new">Needs review</option><option value="reviewing">Reviewing</option><option value="approved">Approved</option><option value="resolved">Resolved</option><option value="dismissed">Dismissed</option></select><select value={severity} onChange={e=>setSeverity(e.target.value)}><option value="all">All severity</option><option value="high">High</option><option value="medium">Medium</option><option value="low">Low</option></select><span className="result-count">{filtered.length} findings</span></div>
+      {selected.length>0&&<div className="bulk-bar"><strong>{selected.length} selected</strong><button onClick={()=>bulk("reviewing")}>Assign to me</button><button onClick={()=>bulk("approved")}>Approve use</button><button onClick={()=>bulk("resolved")}>Mark resolved</button><button onClick={()=>setSelected([])}><i className="bi bi-x"/></button></div>}
+      <div className="table-scroll"><table className="findings-table"><thead><tr><th className="checkbox-cell"><input type="checkbox" checked={selected.length===filtered.length&&filtered.length>0} onChange={()=>setSelected(selected.length===filtered.length?[]:filtered.map(x=>x.id))}/></th><th>Finding</th><th>Issue</th><th>Severity</th><th>Status</th><th>Owner</th><th>Last seen</th><th/></tr></thead><tbody>{filtered.map(f=><tr key={f.id} onClick={()=>onOpen(f)}><td className="checkbox-cell" onClick={e=>e.stopPropagation()}><input type="checkbox" checked={selected.includes(f.id)} onChange={()=>toggle(f.id)}/></td><td><SourceCell finding={f}/></td><td><span className="issue-cell"><strong>{f.issue}</strong><small>{f.asset} · {f.match}</small></span></td><td><Severity value={f.severity}/></td><td><Status status={f.status}/></td><td>{f.owner}</td><td className="muted">{f.lastSeen}</td><td><i className="bi bi-chevron-right muted"/></td></tr>)}</tbody></table></div>
+      {filtered.length===0&&<div className="empty"><i className="bi bi-search"/><strong>No findings match these filters</strong><button onClick={()=>{setQuery("");setStatus("all");setSeverity("all");}}>Clear filters</button></div>}<footer className="table-footer"><span>Showing {filtered.length} of {findings.length}</span><span>Page 1 of 1</span></footer>
+    </section></div>;
+}
 
-  async function updateStatus(id, status) {
-    const previous = findings;
-    setBusyId(id);
-    setFindings((current) => current.map((item) => item.id === id ? { ...item, status } : item));
-    try {
-      await brandPoliceService.updateFinding(id, status);
-      const label = status === "approved" ? "Finding approved" : status === "dismissed" ? "Finding dismissed" : "Finding marked as reviewed";
-      setToast({ tone: "success", message: label });
-    } catch {
-      setFindings(previous);
-      setToast({ tone: "error", message: "That change could not be saved." });
-    } finally {
-      setBusyId(null);
-    }
-  }
+function FindingDrawer({finding,onClose,onUpdate}){
+  const [comment,setComment]=useState(""); const [notes,setNotes]=useState([]); const [rescanning,setRescanning]=useState(false); const [shared,setShared]=useState(false); if(!finding)return null; const act=status=>onUpdate(finding.id,{status});
+  return <div className="drawer-layer"><button className="drawer-backdrop" onClick={onClose} aria-label="Close finding"/><aside className="drawer"><header><div><small>{finding.id}</small><h2>{finding.issue}</h2></div><button onClick={onClose}><i className="bi bi-x-lg"/></button></header><div className="drawer-body">
+    <div className="evidence"><div className={`mock-page ${finding.tone}`}><div className="browser-bar"><i/><i/><i/><span>{finding.domain}</span></div><div className="mock-content"><span>BRAND</span><strong>b Brandy</strong><div className="detection-box"><b>Detected asset</b></div></div></div><div className="evidence-meta"><span><i className="bi bi-camera"/> Captured {finding.lastSeen}</span><a href={finding.url} target="_blank" rel="noreferrer">Open source <i className="bi bi-box-arrow-up-right"/></a></div></div>
+    <section className="detail-section"><div className="detail-head"><h3>Assessment</h3><Severity value={finding.severity}/></div><p>{finding.context}</p><div className="confidence"><span><strong>{finding.confidence}%</strong> match confidence</span><div><i style={{width:`${finding.confidence}%`}}/></div></div></section>
+    <section className="rule-callout"><i className="bi bi-journal-check"/><div><small>SYNCED FROM BRANDY GUIDELINES</small><strong>{finding.rule}</strong><button>Open guideline block <i className="bi bi-arrow-up-right"/></button></div></section>
+    <section className="replacement-card"><div className="replacement-preview">b</div><div><small>RECOMMENDED REPLACEMENT</small><strong>{finding.asset} · Current approved version</strong><span>Synced from Brand Space 12 minutes ago</span></div><button className="secondary">Open asset</button></section>
+    <section className="ai-explanation"><i className="bi bi-stars"/><div><small>BRAND POLICE EXPLANATION</small><p>This usage does not match the current approved asset and violates the linked guideline. Replace it with the current Brand Space version, then re-scan this URL to verify the correction.</p></div></section>
+    <section className="detail-section"><h3>Finding details</h3><dl><div><dt>Status</dt><dd><Status status={finding.status}/></dd></div><div><dt>Matched asset</dt><dd>{finding.asset}</dd></div><div><dt>First seen</dt><dd>{finding.firstSeen}</dd></div><div><dt>Owner</dt><dd><select value={finding.owner} onChange={e=>onUpdate(finding.id,{owner:e.target.value})}><option>Unassigned</option><option>Akshay Kumar</option><option>Himanshi</option></select></dd></div></dl></section>
+    <section className="resolution-tools"><button onClick={()=>setShared(true)}><i className="bi bi-link-45deg"/><span><strong>{shared?"Resolution link copied":"Share with partner"}</strong><small>Restricted access to this finding only</small></span></button><button disabled={rescanning} onClick={()=>{setRescanning(true);window.setTimeout(()=>setRescanning(false),1200);}}><i className={`bi ${rescanning?"bi-arrow-repeat spinning":"bi-radar"}`}/><span><strong>{rescanning?"Checking source":"Re-scan this URL"}</strong><small>Verify that the correction is live</small></span></button></section>
+    <section className="detail-section"><h3>Activity</h3><div className="notes">{notes.map((n,i)=><div key={i}><span>AK</span><p><strong>Akshay Kumar</strong><small>Just now</small>{n}</p></div>)}<div><span className="system-avatar"><i className="bi bi-shield-check"/></span><p><strong>Brand Police</strong><small>{finding.firstSeen}</small>Finding created from a scheduled scan.</p></div></div><div className="comment-box"><input value={comment} onChange={e=>setComment(e.target.value)} placeholder="Add a comment"/><button disabled={!comment.trim()} onClick={()=>{setNotes([...notes,comment]);setComment("");}}><i className="bi bi-send"/></button></div></section>
+  </div><footer><button className="secondary" onClick={()=>act("dismissed")}>Dismiss</button><button className="secondary" onClick={()=>act("approved")}>Approve use</button><button className="primary" onClick={()=>act(finding.status==="resolved"?"reviewing":"resolved")}><i className="bi bi-check2-circle"/>{finding.status==="resolved"?"Reopen":"Mark resolved"}</button></footer></aside></div>;
+}
 
-  async function runScan() {
-    setScanning(true);
-    try {
-      const result = await brandPoliceService.runScan();
-      setToast({ tone: "success", message: `Scan complete. ${result.newFindings} new matches found.` });
-    } catch {
-      setToast({ tone: "error", message: "The scan could not be started." });
-    } finally {
-      setScanning(false);
-    }
-  }
+function Scans({onRun}){
+  const [showNew,setShowNew]=useState(false); const [target,setTarget]=useState("domain"); const [url,setUrl]=useState("https://"); const [running,setRunning]=useState(false); const [done,setDone]=useState(null);
+  const submit=async()=>{setRunning(true);const result=await onRun({target,url,assets:["Primary logo","Symbol mark"]});setDone(result);setRunning(false);};
+  return <div className="page-content"><PageTitle title="Scans" description="Run one-time checks, schedule monitoring, and compare changes over time."><button className="primary" onClick={()=>setShowNew(true)}><i className="bi bi-radar"/>New scan</button></PageTitle>
+    <section className="scan-summary"><div><span className="metric-icon orange"><i className="bi bi-radar"/></span><p><strong>Daily monitoring is active</strong><small>Next scan today at 6:00 PM · 4 domains · 5 assets</small></p><button className="secondary">Edit schedule</button></div><div className="scan-stats"><span><strong>23</strong><small>Scans this month</small></span><span><strong>1,842</strong><small>Pages checked</small></span><span><strong>7</strong><small>New findings</small></span><span><strong>98.6%</strong><small>Successful scans</small></span></div></section>
+    <section className="panel"><div className="panel-heading"><div><h2>Scan history</h2><p>Every run compared with the previous scan</p></div><select><option>All scans</option><option>Scheduled</option><option>Manual</option></select></div><div className="table-scroll"><table><thead><tr><th>Scan</th><th>Target</th><th>Type</th><th>Pages</th><th>Changes since last scan</th><th>Started</th><th>Duration</th></tr></thead><tbody>{scansSeed.map(s=><tr key={s.id}><td><strong>{s.id}</strong><small className="cell-sub"><i className="bi bi-check2-circle"/> {s.status}</small></td><td>{s.target}</td><td>{s.type}</td><td>{s.pages}</td><td><div className="scan-delta"><Badge tone={s.new?"amber":"gray"}>{s.new} new</Badge><Badge tone={s.changed?"blue":"gray"}>{s.changed} changed</Badge><Badge tone={s.resolved?"green":"gray"}>{s.resolved} resolved</Badge></div></td><td className="muted">{s.date}</td><td className="muted">{s.duration}</td></tr>)}</tbody></table></div></section>
+    {showNew&&<div className="modal-layer"><button className="modal-backdrop" onClick={()=>setShowNew(false)}/><div className="modal wide"><header><div><h2>Start a new scan</h2><p>Choose what Brand Police should check</p></div><button onClick={()=>setShowNew(false)}><i className="bi bi-x-lg"/></button></header>{done?<div className="success-state compact"><span><i className="bi bi-check2"/></span><h2>Scan queued</h2><p>{done.pages} pages will be checked. The demo found {done.newFindings} potential matches.</p></div>:<div className="modal-body"><div className="choice-grid">{[["domain","bi-globe2","Full domain"],["sitemap","bi-diagram-3","Sitemap"],["url","bi-file-earmark","Single URL"]].map(([id,icon,label])=><button key={id} className={target===id?"selected":""} onClick={()=>setTarget(id)}><i className={`bi ${icon}`}/><strong>{label}</strong><small>{id==="domain"?"Crawl all public pages":id==="sitemap"?"Use an XML sitemap":"Check one exact page"}</small></button>)}</div><label className="field"><span>URL</span><input value={url} onChange={e=>setUrl(e.target.value)} placeholder="https://example.com"/></label><div className="option-row"><span><strong>Check all monitored assets</strong><small>5 active assets will be included</small></span><input type="checkbox" defaultChecked/></div><div className="option-row"><span><strong>Capture evidence screenshots</strong><small>Save a timestamped screenshot with each finding</small></span><input type="checkbox" defaultChecked/></div></div>}<footer>{done?<button className="primary" onClick={()=>{setDone(null);setShowNew(false);}}>Done</button>:<><button className="secondary" onClick={()=>setShowNew(false)}>Cancel</button><button className="primary" disabled={running||url.length<9} onClick={submit}><i className={`bi ${running?"bi-arrow-repeat spinning":"bi-radar"}`}/>{running?"Starting":"Start scan"}</button></>}</footer></div></div>}
+  </div>;
+}
 
-  return (
-    <div className="app-shell">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <main className="main-content">
-        <header className="topbar">
-          <button className="icon-button menu-button" onClick={() => setSidebarOpen(true)} aria-label="Open navigation"><Menu size={19} /></button>
-          <div className="topbar-spacer" />
-          {brandPoliceService.isDemo && <span className="demo-pill"><Sparkles size={13} />Demo mode</span>}
-          <button className="icon-button notification-button" aria-label="Notifications"><Bell size={18} /><span /></button>
-          <span className="top-avatar">AK</span>
-        </header>
+function BrandData(){
+  const [syncing,setSyncing]=useState(false); const [lastSync,setLastSync]=useState("12 minutes ago");
+  const sync=()=>{setSyncing(true);window.setTimeout(()=>{setSyncing(false);setLastSync("Just now");},1200);};
+  return <div className="page-content"><PageTitle title="Brand data" description="Brand Police automatically uses the assets and guidelines in this Brand Space."><button className="secondary" disabled={syncing} onClick={sync}><i className={`bi bi-arrow-repeat ${syncing?"spinning":""}`}/>{syncing?"Syncing":"Sync now"}</button></PageTitle>
+    <section className="panel sync-hero"><span className="sync-icon"><i className="bi bi-check2"/></span><div><Badge tone="green">Connected</Badge><h2>Brandy Brand Space is the source of truth</h2><p>No uploads are required. Asset versions, colours, fonts and guideline rules are read directly from Brandy and refreshed whenever the Brand Space changes.</p><small>Last successful sync {lastSync}</small></div><div className="sync-stats"><span><strong>172</strong><small>Items indexed</small></span><span><strong>24</strong><small>Rules extracted</small></span><span><strong>0</strong><small>Sync errors</small></span></div></section>
+    <section className="brand-source-grid">{brandSources.map(source=><article className="panel brand-source-card" key={source.name}><span><i className={`bi ${source.icon}`}/></span><div><small>{source.name}</small><strong>{source.value}</strong><p>{source.detail}</p></div><Badge tone="green"><i className="bi bi-check2"/> {source.status}</Badge><button className="icon-button"><i className="bi bi-chevron-right"/></button></article>)}</section>
+    <div className="data-grid"><section className="panel"><div className="panel-heading"><div><h2>Recent Brand Space changes</h2><p>Changes automatically trigger affected monitoring checks</p></div></div><div className="change-list"><article><span className="change-icon retired"><i className="bi bi-archive"/></span><div><strong>2024 horizontal logo retired</strong><small>4 external uses were found and moved to Needs review</small></div><time>12 min ago</time></article><article><span className="change-icon updated"><i className="bi bi-palette"/></span><div><strong>Core purple updated</strong><small>18 monitored pages were compared against the new colour value</small></div><time>Yesterday</time></article><article><span className="change-icon updated"><i className="bi bi-fonts"/></span><div><strong>DM Sans weight rules updated</strong><small>Typography checks refreshed across all monitored domains</small></div><time>Aug 9</time></article></div></section><section className="panel automation-panel"><div className="panel-heading"><div><h2>Automatic actions</h2><p>What happens after a Brand Space change</p></div></div><ol><li><span>1</span><div><strong>Detect the change</strong><small>Asset, rule, colour or font version is updated</small></div></li><li><span>2</span><div><strong>Re-check known usage</strong><small>Existing matches are compared with the new source of truth</small></div></li><li><span>3</span><div><strong>Create focused findings</strong><small>Only new or changed violations are surfaced</small></div></li></ol></section></div>
+  </div>;
+}
 
-        <div className="page-wrap">
-          <section className="page-heading">
-            <div>
-              <div className="heading-kicker"><ShieldCheck size={15} />Brand monitoring</div>
-              <h1>Brand Police</h1>
-              <p>Discover where your brand assets appear online and review every match in one place.</p>
-            </div>
-            <button className="primary-button" onClick={runScan} disabled={scanning}>
-              {scanning ? <LoaderCircle className="spin" size={17} /> : <RefreshCw size={17} />}
-              {scanning ? "Scanning the web" : "Scan now"}
-            </button>
-          </section>
+function Assets(){ const [assets,setAssets]=useState(assetsSeed); const [filter,setFilter]=useState("All"); const [selected,setSelected]=useState(null); const visible=assets.filter(a=>filter==="All"||a.status===filter); return <div className="page-content"><PageTitle title="Monitored assets" description="Track where every active, archived and retired Brand Space asset appears."><div className="source-status"><i/><span><strong>Synced with Brand Space</strong><small>126 assets indexed · 12 min ago</small></span></div></PageTitle><div className="asset-summary"><span><strong>5</strong><small>assets monitored</small></span><span><strong>107</strong><small>external uses found</small></span><span><strong>4</strong><small>retired uses need action</small></span><span><strong>24</strong><small>domains detected</small></span></div><div className="asset-toolbar"><div className="rule-tabs">{["All","Active","Archived","Retired"].map(x=><button className={filter===x?"active":""} key={x} onClick={()=>setFilter(x)}>{x}</button>)}</div><button className="secondary"><i className="bi bi-arrow-repeat"/>Refresh from Brand Space</button></div><section className="asset-grid">{visible.map((a,i)=><article className="asset-card" key={a.name}><button className={`asset-canvas ${a.tone}`} onClick={()=>setSelected(a)}><span>b</span>{a.status!=="Active"&&<Badge tone={a.status==="Retired"?"red":"gray"}>{a.status}</Badge>}<i className="bi bi-arrow-up-right"/></button><div className="asset-card-body"><div><strong>{a.name}</strong><small>{a.type} · {a.source}</small><em>{a.matches} uses across {a.domains} domains</em></div><label className="switch"><input type="checkbox" checked={a.monitored} onChange={()=>setAssets(x=>x.map(v=>v.name===a.name?{...v,monitored:!v.monitored}:v))}/><i/></label></div><footer><span>Updated {a.updated}</span><button onClick={()=>setSelected(a)}>Where used <i className="bi bi-chevron-right"/></button></footer></article>)}</section>{selected&&<div className="modal-layer"><button className="modal-backdrop" onClick={()=>setSelected(null)}/><div className="modal wide usage-modal"><header><div><small>WHERE USED</small><h2>{selected.name}</h2><p>{selected.matches} detected uses across {selected.domains} domains</p></div><button onClick={()=>setSelected(null)}><i className="bi bi-x-lg"/></button></header><div className="modal-body"><div className="asset-origin"><div className={`asset-canvas ${selected.tone}`}><span>b</span></div><span><small>BRAND SPACE SOURCE</small><strong>{selected.source}</strong><em>{selected.status} · {selected.updated}</em></span><button className="secondary">Open in Brandy</button></div><div className="usage-list"><article><i className="bi bi-globe2"/><span><strong>brandyhq.com</strong><small>24 exact matches · Owned domain</small></span><Badge tone="green">Approved</Badge></article><article><i className="bi bi-globe2"/><span><strong>seahawkmedia.com</strong><small>8 exact matches · Approved partner</small></span><Badge tone="green">Approved</Badge></article><article><i className="bi bi-globe2"/><span><strong>brandfetch.com</strong><small>2 matches · Unknown domain</small></span><Badge tone={selected.status==="Retired"?"red":"amber"}>{selected.status==="Retired"?"Violation":"Review"}</Badge></article></div></div><footer><button className="secondary" onClick={()=>setSelected(null)}>Close</button><button className="primary">View related findings</button></footer></div></div>}</div>; }
 
-          <section className="monitor-card">
-            <div className="monitor-icon"><ShieldCheck size={25} /></div>
-            <div className="monitor-copy">
-              <div><h2>Monitoring is active</h2><span className="live-dot">Live</span></div>
-              <p>4 brand assets are being checked across indexed public web pages.</p>
-            </div>
-            <div className="monitor-meta">
-              <div><span>Last scan</span><strong>Today, 10:42 AM</strong></div>
-              <div><span>Next scan</span><strong>Monday, 9:00 AM</strong></div>
-            </div>
-          </section>
+function Domains(){ const [domains,setDomains]=useState(domainsSeed); const [adding,setAdding]=useState(false); const [value,setValue]=useState(""); return <div className="page-content"><PageTitle title="Domains" description="Classify domains so approved use is separated from suspicious use."><button className="primary" onClick={()=>setAdding(true)}><i className="bi bi-plus"/>Add domain</button></PageTitle><section className="panel"><div className="toolbar"><label className="search"><i className="bi bi-search"/><input placeholder="Search domains"/></label><select><option>All classifications</option><option>Owned</option><option>Approved partner</option><option>Unknown</option></select><span className="result-count">{domains.length} domains</span></div><div className="table-scroll"><table><thead><tr><th>Domain</th><th>Classification</th><th>Status</th><th>Frequency</th><th>Pages</th><th>Open findings</th><th>Health</th><th/></tr></thead><tbody>{domains.map(d=><tr key={d.domain}><td><span className="domain-cell"><i className="bi bi-globe2"/><strong>{d.domain}</strong></span></td><td><Badge tone={d.type==="Owned"?"purple":d.type==="Approved partner"?"green":"amber"}>{d.type}</Badge></td><td><span className="monitoring"><i/> {d.status}</span></td><td>{d.frequency}</td><td>{d.pages}</td><td>{d.findings}</td><td><strong>{d.score}%</strong></td><td><button className="icon-button"><i className="bi bi-three-dots"/></button></td></tr>)}</tbody></table></div></section>{adding&&<div className="modal-layer"><button className="modal-backdrop" onClick={()=>setAdding(false)}/><div className="modal"><header><h2>Add monitored domain</h2><button onClick={()=>setAdding(false)}><i className="bi bi-x-lg"/></button></header><div className="modal-body"><label className="field"><span>Domain</span><input value={value} onChange={e=>setValue(e.target.value)} placeholder="example.com"/></label><label className="field"><span>Classification</span><select><option>Owned</option><option>Approved partner</option><option>Unknown</option></select></label><label className="field"><span>Scan frequency</span><select><option>Daily</option><option>Weekly</option><option>Monthly</option></select></label></div><footer><button className="secondary" onClick={()=>setAdding(false)}>Cancel</button><button className="primary" onClick={()=>{if(value.trim())setDomains([...domains,{domain:value.trim(),type:"Unknown",status:"Monitoring",frequency:"Weekly",pages:0,findings:0,score:100}]);setAdding(false);setValue("");}}>Add domain</button></footer></div></div>}</div>; }
 
-          <section className="stats-grid" aria-label="Finding summary">
-            <StatCard icon={Globe2} label="Total findings" value={findings.length || 5} note="Across 5 domains" tone="purple" />
-            <StatCard icon={AlertCircle} label="Needs review" value={counts.new || 0} note="New since last scan" tone="red" />
-            <StatCard icon={CheckCircle2} label="Approved" value={counts.approved || 0} note="Known and permitted" tone="green" />
-            <StatCard icon={Archive} label="Reviewed" value={(counts.reviewed || 0) + (counts.dismissed || 0)} note="Already processed" tone="blue" />
-          </section>
+function Rules(){ const [rules,setRules]=useState(rulesSeed); const [tab,setTab]=useState("all"); const [syncing,setSyncing]=useState(false); const visible=rules.filter(r=>tab==="all"||r.category.toLowerCase()===tab); return <div className="page-content"><PageTitle title="Compliance rules" description="Automated checks extracted from the guidelines already stored in Brandy."><button className="secondary" disabled={syncing} onClick={()=>{setSyncing(true);window.setTimeout(()=>setSyncing(false),1000);}}><i className={`bi bi-arrow-repeat ${syncing?"spinning":""}`}/>{syncing?"Syncing":"Sync guidelines"}</button></PageTitle><section className="guideline-sync panel"><span><i className="bi bi-journal-check"/></span><div><strong>24 guideline rules detected</strong><p>Six rules can currently be checked automatically. The remaining guideline content is available as context for Brand Police explanations.</p></div><Badge tone="green">Synced 12 min ago</Badge><button className="text-button">Open guidelines <i className="bi bi-arrow-up-right"/></button></section><div className="rule-tabs">{["all","logo","color","layout","quality","voice"].map(x=><button className={tab===x?"active":""} key={x} onClick={()=>setTab(x)}>{x[0].toUpperCase()+x.slice(1)}</button>)}</div><section className="rules-list">{visible.map(r=><article className="panel rule-card" key={r.id}><span className="rule-icon"><i className="bi bi-shield-check"/></span><span><strong>{r.title}</strong><small>{r.description}</small><em>{r.category} · {r.severity} severity</em><button className="rule-source"><i className="bi bi-link-45deg"/>{r.source}</button></span><div className="rule-sync"><Badge tone={r.enabled?"green":"gray"}>{r.enabled?"Active":"Paused"}</Badge><small>Synced {r.synced}</small></div><label className="switch"><input type="checkbox" checked={r.enabled} onChange={()=>setRules(x=>x.map(v=>v.id===r.id?{...v,enabled:!v.enabled}:v))}/><i/></label><button className="icon-button"><i className="bi bi-chevron-right"/></button></article>)}</section></div>; }
 
-          <section className="findings-section">
-            <div className="section-heading">
-              <div><h2>Findings</h2><p>Review matches and teach Brand Police which uses are legitimate.</p></div>
-              <button className="secondary-button"><Filter size={15} />Filters</button>
-            </div>
+function Reports(){ return <div className="page-content"><PageTitle title="Reports" description="Track compliance across domains, assets, partners, and time."><div className="button-group"><button className="secondary"><i className="bi bi-calendar3"/>Last 30 days</button><button className="primary"><i className="bi bi-download"/>Export report</button></div></PageTitle><section className="metrics-grid report-metrics"><Metric label="Overall compliance" value="84%" change="Up 6%" icon="bi-graph-up" tone="orange"/><Metric label="Issues detected" value="27" change="Down 12%" icon="bi-flag" tone="red"/><Metric label="Resolution rate" value="78%" change="21 of 27 resolved" icon="bi-check2-circle" tone="green"/><Metric label="Average response" value="2.4d" change="0.8d faster" icon="bi-clock" tone="blue"/></section><div className="report-grid"><section className="panel report-chart"><div className="panel-heading"><div><h2>Compliance over time</h2><p>Weekly score and resolved issues</p></div></div><TrendChart/></section><section className="panel scorecard"><div className="panel-heading"><div><h2>Domain scorecard</h2><p>Lowest score first</p></div></div>{domainsSeed.slice().sort((a,b)=>a.score-b.score).map(d=><div className="score-row" key={d.domain}><span><strong>{d.domain}</strong><small>{d.findings} open findings</small></span><div><i style={{width:`${d.score}%`}}/></div><b>{d.score}%</b></div>)}</section></div><section className="panel report-table"><div className="panel-heading"><div><h2>Issues by rule</h2><p>Rules creating the most findings</p></div></div><div className="table-scroll"><table><thead><tr><th>Rule</th><th>Category</th><th>Detected</th><th>Resolved</th><th>Open</th><th>Resolution rate</th></tr></thead><tbody>{[["Current logo only","Logo",9,7],["Protect logo proportions","Logo",7,5],["Approved brand colors","Color",6,5],["Minimum clear space","Layout",5,4]].map(r=><tr key={r[0]}><td><strong>{r[0]}</strong></td><td>{r[1]}</td><td>{r[2]}</td><td>{r[3]}</td><td>{r[2]-r[3]}</td><td>{Math.round(r[3]/r[2]*100)}%</td></tr>)}</tbody></table></div></section></div>; }
 
-            <div className="findings-toolbar">
-              <div className="tabs" role="tablist" aria-label="Finding status">
-                {tabs.map((tab) => (
-                  <button key={tab.id} className={activeTab === tab.id ? "active" : ""} onClick={() => setActiveTab(tab.id)} role="tab" aria-selected={activeTab === tab.id}>
-                    {tab.label}{tab.id !== "all" && counts[tab.id] ? <span>{counts[tab.id]}</span> : null}
-                  </button>
-                ))}
-              </div>
-              <label className="search-box">
-                <Search size={16} />
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search findings" aria-label="Search findings" />
-                {query && <button onClick={() => setQuery("")} aria-label="Clear search"><X size={14} /></button>}
-              </label>
-            </div>
+function Settings(){ const [email,setEmail]=useState(true); const [high,setHigh]=useState(true); const [retired,setRetired]=useState(true); const [changes,setChanges]=useState(true); return <div className="page-content narrow"><PageTitle title="Brand Police settings" description="Control monitoring, notifications, and evidence retention."/><section className="settings-stack"><div className="panel settings-card"><div><h2>Brandy connection</h2><p>The active Brand Space is the automatic source for assets and rules.</p></div><div className="connection-row"><span><i className="bi bi-check2"/></span><div><strong>Brandy Brand Space connected</strong><small>Last sync 12 minutes ago · 172 items indexed</small></div><button className="secondary">Sync now</button></div><div className="option-row"><span><strong>Re-check usage after Brand Space changes</strong><small>Automatically compare known usage when an asset or rule changes</small></span><label className="switch"><input type="checkbox" checked={changes} onChange={()=>setChanges(!changes)}/><i/></label></div></div><div className="panel settings-card"><div><h2>Monitoring</h2><p>Set the default schedule for monitored domains.</p></div><label className="field"><span>Default scan frequency</span><select><option>Daily</option><option>Weekly</option><option>Monthly</option></select></label><div className="option-row"><span><strong>Only surface new or changed findings</strong><small>Keep unchanged matches in scan history</small></span><label className="switch"><input type="checkbox" defaultChecked/><i/></label></div></div><div className="panel settings-card"><div><h2>Notifications</h2><p>Choose when Brand Police should alert your team.</p></div><div className="option-row"><span><strong>Email notifications</strong><small>Send a summary when new findings are detected</small></span><label className="switch"><input type="checkbox" checked={email} onChange={()=>setEmail(!email)}/><i/></label></div><div className="option-row"><span><strong>High severity alerts</strong><small>Alert immediately for critical brand misuse</small></span><label className="switch"><input type="checkbox" checked={high} onChange={()=>setHigh(!high)}/><i/></label></div><div className="option-row"><span><strong>Retired asset detected</strong><small>Alert when an archived or retired asset appears externally</small></span><label className="switch"><input type="checkbox" checked={retired} onChange={()=>setRetired(!retired)}/><i/></label></div></div><div className="panel settings-card"><div><h2>Evidence retention</h2><p>Keep timestamped screenshots for audit and resolution.</p></div><label className="field"><span>Retention period</span><select><option>12 months</option><option>24 months</option><option>Indefinitely</option></select></label></div></section><div className="settings-footer"><button className="primary">Save changes</button></div></div>; }
 
-            <div className="findings-list">
-              {loading && [1, 2, 3].map((item) => <div className="finding-skeleton" key={item}><span /><div><i /><i /><i /></div></div>)}
-              {!loading && filteredFindings.map((finding) => <FindingCard key={finding.id} finding={finding} busy={busyId === finding.id} onStatusChange={updateStatus} />)}
-              {!loading && filteredFindings.length === 0 && (
-                <div className="empty-state"><Search size={24} /><h3>No findings here</h3><p>Try another status or clear your search.</p><button className="secondary-button" onClick={() => { setActiveTab("all"); setQuery(""); }}>View all findings</button></div>
-              )}
-            </div>
-          </section>
-        </div>
-      </main>
-      {toast && <Toast {...toast} onClose={() => setToast(null)} />}
-    </div>
-  );
+function Toast({toast,onClose}){ if(!toast)return null; return <div className={`toast ${toast.tone||"success"}`}><i className={`bi ${toast.tone==="error"?"bi-exclamation-circle":"bi-check-circle"}`}/><span>{toast.message}</span><button onClick={onClose}><i className="bi bi-x"/></button></div>; }
+
+export default function BrandConsciousnessPage(){
+  const [agent,setAgent]=useState("hub"); const [active,setActive]=useState("overview"); const [findings,setFindings]=useState([]); const [loading,setLoading]=useState(true); const [selectedId,setSelectedId]=useState(null); const [toast,setToast]=useState(null);
+  useEffect(()=>{brandPoliceService.listFindings().then(r=>setFindings(r.findings)).catch(()=>setToast({tone:"error",message:"Findings could not be loaded."})).finally(()=>setLoading(false));},[]);
+  const selected=findings.find(f=>f.id===selectedId); const navigate=id=>{setActive(id);window.scrollTo({top:0,behavior:"smooth"});};
+  const selectAgent=id=>{setAgent(id);if(id==="police")setActive("overview");window.scrollTo({top:0,behavior:"smooth"});};
+  const update=async(id,patch)=>{const before=findings;setFindings(x=>x.map(f=>f.id===id?{...f,...patch}:f));try{await brandPoliceService.updateFinding(id,patch);setToast({message:"Finding updated."});}catch{setFindings(before);setToast({tone:"error",message:"That update could not be saved."});}};
+  const run=async payload=>{try{return await brandPoliceService.runScan(payload);}catch{setToast({tone:"error",message:"The scan could not be started."});throw new Error();}};
+  return <div className="app-shell"><div className="accent-glow"/><ProductRail/><div className="curved-workspace"><main className="workspace"><Header agent={agent} active={active} onNavigate={navigate} onBack={()=>setAgent("hub")}/>{loading?<div className="loading-screen"><i className="bi bi-arrow-repeat spinning"/>Loading brand intelligence</div>:<>{agent==="hub"&&<AgentHub onSelect={selectAgent}/>} {agent==="architect"&&<BrandArchitect/>} {agent==="coach"&&<BrandCoach/>} {agent==="cbo"&&<ChiefBrandOfficer/>} {agent==="support"&&<SupportAgent/>} {agent==="police"&&<>{active==="overview"&&<Overview findings={findings} onNavigate={navigate} onOpen={f=>setSelectedId(f.id)}/>} {active==="findings"&&<Findings findings={findings} onOpen={f=>setSelectedId(f.id)} onUpdate={update}/>} {active==="scans"&&<Scans onRun={run}/>} {active==="brand-data"&&<BrandData/>} {active==="assets"&&<Assets/>} {active==="domains"&&<Domains/>} {active==="rules"&&<Rules/>} {active==="reports"&&<Reports/>} {active==="settings"&&<Settings/>}</>}</>}</main></div>{agent==="police"&&<FindingDrawer finding={selected} onClose={()=>setSelectedId(null)} onUpdate={update}/>}<Toast toast={toast} onClose={()=>setToast(null)}/></div>;
 }

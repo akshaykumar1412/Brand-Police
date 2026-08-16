@@ -1,6 +1,18 @@
-# Brand Police frontend
+# Brand Consciousness AI frontend
 
-Production-quality Brand Police interface for Brandy. It runs as a static Next.js application today and switches to the real backend later without changing the UI.
+Brand Consciousness AI brings Brandy's five AI agents into one connected product. Each agent uses the customer's Brand Space as shared context, so users can move from brand creation to everyday governance without uploading the same source material again.
+
+## Prototype coverage
+
+- A main Brand Consciousness AI page showing the five agents as one system
+- Brand Architect for discovering brand assets from a website and structuring Brand Space
+- Brand Coach for finding gaps, improving brand quality, and creating recommended tasks
+- Chief Brand Officer for governance reviews, leadership metrics, and AI brand briefs
+- Brand Police for continuous compliance monitoring, findings, evidence, reports, and resolution
+- Brandy Support Agent for contextual product help based on the user's current workflow
+- Shared system activity and an Architect to Coach to CBO to Police journey
+- Responsive Brandy navigation using the current DM Sans type system
+- Realistic interactive demo data with no paid AI or scanning calls
 
 ## Run locally
 
@@ -9,40 +21,27 @@ npm install
 npm run dev
 ```
 
-## Current demo mode
+## Data model and demo mode
 
-When `NEXT_PUBLIC_BRAND_POLICE_API_URL` is not set, the app uses realistic seeded data and keeps review decisions in `localStorage`. Scans are simulated. No credentials, database, or paid scanning API are required.
+The intended production flow reads brand data from Brandy's Brand Space. Users do not upload source files into this interface. In the prototype, agent actions and Brand Police scans are simulated. Without `NEXT_PUBLIC_BRAND_POLICE_API_URL`, findings and review decisions use local demo data.
 
-## Connect the production backend
+## Brand Police backend contract
 
-Set:
-
-```bash
-NEXT_PUBLIC_BRAND_POLICE_API_URL=https://api.example.com/brand-police
-```
-
-The frontend expects authenticated, tenant-scoped endpoints:
+Set `NEXT_PUBLIC_BRAND_POLICE_API_URL` to connect the production service. The frontend currently expects:
 
 | Method | Endpoint | Purpose |
 | --- | --- | --- |
-| `GET` | `/findings` | Return `{ findings: Finding[] }` |
-| `PATCH` | `/findings/:id` | Accept `{ status }` and return the updated finding |
-| `POST` | `/scans` | Start a scan and return `{ scanned, newFindings, completedAt }` |
+| `GET` | `/findings` | List tenant-scoped findings |
+| `PATCH` | `/findings/:id` | Update status, owner, or finding metadata |
+| `POST` | `/scans` | Queue a scan using target and asset selections |
 
-Authentication should use the existing Brandy session cookie. The server must enforce workspace and Brand Space access. Never trust a workspace or Brand Space ID supplied only by the client.
+Authentication, tenancy, scheduling, provider credentials, evidence storage, audit logs, rate limits, and deduplication must remain server-side.
 
-## Production backend requirements
+The other four agent experiences are currently frontend prototypes. Their production APIs should follow the same tenant-scoped, server-side model and use Brand Space as the shared source of truth.
 
-- Queue scans outside the request lifecycle
-- Scope every finding and scan to workspace and Brand Space IDs
-- Rate limit scan creation
-- Deduplicate by Brand Space, source URL, matched asset, and scan window
-- Maintain approved-domain and approved-use records
-- Store scan history and first-seen/last-seen timestamps
-- Keep Google Vision or other provider credentials server-side
-- Send alerts only for newly discovered findings
-- Record review actions in an audit log
-- Use provider match terminology instead of presenting it as compliance certainty
+## EC2 deployment
+
+The app builds as a static Next.js export in `out/`. It can be served from EC2 with Nginx or another static web server. Configure `NEXT_PUBLIC_BRAND_POLICE_API_URL` at build time when the production API is ready, and serve the API over HTTPS with the correct CORS policy.
 
 ## Build
 
